@@ -1,5 +1,4 @@
 import { verifyKey } from "discord-interactions";
-import type { Request, Response } from "express";
 import type { PendingApproval } from "./approvals.js";
 
 const DISCORD_API = "https://discord.com/api/v10";
@@ -156,7 +155,7 @@ export async function markDiscordApprovalResolved(
   );
 }
 
-export async function handleDiscordInteraction(req: Request, res: Response) {
+export async function handleDiscordInteraction(req: any, res: any) {
   if (!publicKey) {
     res.status(500).json({ error: "DISCORD_PUBLIC_KEY not configured" });
     return;
@@ -165,7 +164,7 @@ export async function handleDiscordInteraction(req: Request, res: Response) {
   // Verify the request signature
   const signature = req.headers["x-signature-ed25519"] as string;
   const timestamp = req.headers["x-signature-timestamp"] as string;
-  const rawBody = (req as Request & { body: Buffer }).body;
+  const rawBody = req.body;
 
   const isValid = await verifyKey(rawBody, signature, timestamp, publicKey);
 

@@ -31,7 +31,7 @@ export async function getGmailClient() {
     refresh_token: process.env.GMAIL_REFRESH_TOKEN,
   });
 
-  gmail = google.gmail({ version: "v1", auth: oauth2Client });
+  gmail = google.gmail({ version: "v1" as const, auth: oauth2Client });
   return gmail;
 }
 

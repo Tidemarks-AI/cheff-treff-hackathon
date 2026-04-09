@@ -1,8 +1,6 @@
-import type { Response } from "express";
+const sseClients = new Set<any>();
 
-const sseClients = new Set<Response>();
-
-export function addSSEClient(res: Response): void {
+export function addSSEClient(res: any): void {
   res.writeHead(200, {
     "Content-Type": "text/event-stream",
     "Cache-Control": "no-cache",
