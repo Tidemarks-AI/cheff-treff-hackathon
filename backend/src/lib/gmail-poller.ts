@@ -28,7 +28,7 @@ export function stopGmailPoller(): void {
   }
 }
 
-async function pollOnce(): Promise<void> {
+export async function pollOnce(): Promise<void> {
   try {
     const gmail = await getGmailClient();
 

@@ -294,7 +294,13 @@ if (!existingPolicies.some((p) => p.toolName === "createFixedCost")) {
   console.log("Seeded default policy: createFixedCost monthly_amount > 3000");
 }
 
-app.use(cors({ origin: process.env.CORS_ORIGIN || /localhost:\d+/ }));
+const allowedOrigins: (string | RegExp)[] = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(",").map(o => o.trim())
+  : [/localhost:\d+/];
+if (process.env.VERCEL) {
+  allowedOrigins.push(/\.vercel\.app$/);
+}
+app.use(cors({ origin: allowedOrigins }));
 
 // Discord interactions endpoint needs raw body for signature verification.
 // Must be registered before express.json() middleware.
@@ -864,7 +870,32 @@ app.get("/api/auth/gmail/callback", async (req: any, res: any) => {
   }
 });
 
-// ── Start server ────────────────────────────────────────────
+// ── Vercel Cron: Gmail poll ────────��───────────────────────
+
+app.get("/api/cron/gmail-poll", async (req, res) => {
+  const cronSecret = process.env.CRON_SECRET;
+  if (cronSecret && req.headers["authorization"] !== `Bearer ${cronSecret}`) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
+  try {
+    const { isGmailConfigured } = await import("./lib/gmail.js");
+    if (!isGmailConfigured()) {
+      res.json({ status: "skipped", reason: "Gmail not configured" });
+      return;
+    }
+
+    const { pollOnce } = await import("./lib/gmail-poller.js");
+    await pollOnce();
+    res.json({ status: "ok", timestamp: new Date().toISOString() });
+  } catch (e) {
+    console.error("Cron gmail-poll error:", e);
+    res.status(500).json({ error: (e as Error).message });
+  }
+});
+
+// ── Start server ───���──────────────────────��─────────────────
 
 if (!process.env.VERCEL) {
   // Start Gmail poller if configured
