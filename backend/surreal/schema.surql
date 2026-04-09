@@ -293,6 +293,40 @@ DEFINE FIELD currency ON revenue_forecast TYPE string DEFAULT "EUR";
 DEFINE FIELD basis ON revenue_forecast TYPE option<string>;
 DEFINE FIELD created_at ON revenue_forecast TYPE datetime DEFAULT time::now();
 
+-- ── Change Requests ──────────────────────────────────────────
+
+DEFINE TABLE change_request SCHEMAFULL;
+DEFINE FIELD status ON change_request TYPE "pending" | "approved" | "rejected" DEFAULT "pending";
+DEFINE FIELD received_at ON change_request TYPE datetime DEFAULT time::now();
+DEFINE FIELD source_channel ON change_request TYPE string DEFAULT "email";
+DEFINE FIELD source_mailbox ON change_request TYPE option<string>;
+DEFINE FIELD source_from ON change_request TYPE string;
+DEFINE FIELD source_subject ON change_request TYPE string;
+DEFINE FIELD source_attachment ON change_request TYPE option<string>;
+DEFINE FIELD source_gmail_id ON change_request TYPE option<string>;
+DEFINE FIELD proposal_action ON change_request TYPE "create_node" | "update_node";
+DEFINE FIELD proposal_target_type ON change_request TYPE string;
+DEFINE FIELD proposal_values ON change_request TYPE object;
+DEFINE FIELD proposal_edges ON change_request TYPE array DEFAULT [];
+DEFINE FIELD reasoning_summary ON change_request TYPE string;
+DEFINE FIELD reasoning_confidence ON change_request TYPE float;
+DEFINE FIELD reasoning_evidence ON change_request TYPE array DEFAULT [];
+DEFINE FIELD policy_triggered ON change_request TYPE array DEFAULT [];
+DEFINE FIELD policy_satisfied ON change_request TYPE bool DEFAULT false;
+DEFINE FIELD policy_message ON change_request TYPE option<string>;
+DEFINE FIELD impact_monthly_burn_delta ON change_request TYPE decimal DEFAULT 0;
+DEFINE FIELD impact_annual_cost_delta ON change_request TYPE decimal DEFAULT 0;
+DEFINE FIELD impact_runway_months_delta ON change_request TYPE float DEFAULT 0;
+DEFINE FIELD impact_forecast_after ON change_request TYPE option<object>;
+DEFINE FIELD discord_message_id ON change_request TYPE option<string>;
+DEFINE FIELD discord_channel_id ON change_request TYPE option<string>;
+DEFINE FIELD resolved_by ON change_request TYPE option<string>;
+DEFINE FIELD resolved_at ON change_request TYPE option<datetime>;
+DEFINE FIELD created_at ON change_request TYPE datetime DEFAULT time::now();
+DEFINE FIELD updated_at ON change_request TYPE datetime VALUE time::now();
+
+DEFINE INDEX idx_change_request_status ON change_request FIELDS status;
+
 -- ── Graph Relations (ontology edges) ────────────────────────
 
 DEFINE TABLE requires TYPE RELATION;
@@ -334,6 +368,10 @@ DEFINE FIELD created_at ON converts_to TYPE datetime DEFAULT time::now();
 DEFINE TABLE affects TYPE RELATION;
 DEFINE FIELD label ON affects TYPE option<string>;
 DEFINE FIELD created_at ON affects TYPE datetime DEFAULT time::now();
+
+DEFINE TABLE proposes TYPE RELATION;
+DEFINE FIELD label ON proposes TYPE option<string>;
+DEFINE FIELD created_at ON proposes TYPE datetime DEFAULT time::now();
 
 -- ── Indexes ─────────────────────────────────────────────────
 

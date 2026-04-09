@@ -25,6 +25,7 @@ export default function App() {
         </Link>
         <nav className="ml-8 flex items-center gap-6">
           <Link to="/finance" className="text-sm text-gray-500 transition-colors hover:text-gray-950">Finance</Link>
+          <Link to="/changes" className="text-sm text-gray-500 transition-colors hover:text-gray-950">Changes</Link>
           <Link to="/admin" className="text-sm text-gray-500 transition-colors hover:text-gray-950">Agents</Link>
         </nav>
         <div className="ml-auto flex items-center gap-3">

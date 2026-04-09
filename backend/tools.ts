@@ -182,11 +182,53 @@ const simulateBudgetUpdate = defineTool({
   },
 });
 
+const createFixedCost = defineTool({
+  access: "mutating",
+  name: "createFixedCost",
+  description:
+    "Creates a new fixed cost entry in the financial ontology from an extracted document.",
+  approvalDescription:
+    "Proposes adding a new recurring fixed cost (e.g. office lease, SaaS subscription) to the company's financial ontology.",
+  policyFields: [
+    {
+      name: "monthly_amount",
+      label: "Monthly amount",
+      type: "number",
+      description: "The monthly cost amount in EUR.",
+    },
+    {
+      name: "category",
+      label: "Cost category",
+      type: "string",
+      description: "The cost category (e.g. facilities, software, personnel).",
+    },
+    {
+      name: "term_months",
+      label: "Contract term (months)",
+      type: "number",
+      description: "Duration of the contract in months.",
+    },
+  ],
+  parameters: z.object({
+    monthly_amount: z.number().describe("Monthly cost in EUR"),
+    category: z.string().describe("Cost category"),
+    term_months: z.number().describe("Contract duration in months"),
+    vendor: z.string().describe("Vendor name"),
+  }),
+  execute: async (input) => {
+    return {
+      message: "Fixed cost creation requires approval via change request flow.",
+      input,
+    };
+  },
+});
+
 export const toolRegistry = {
   currentDate,
   startupChecklist,
   testDatabase,
   simulateBudgetUpdate,
+  createFixedCost,
 } satisfies Record<string, ToolDefinition>;
 
 export type ToolName = keyof typeof toolRegistry;

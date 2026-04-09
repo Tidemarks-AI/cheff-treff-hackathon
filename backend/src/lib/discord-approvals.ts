@@ -31,9 +31,14 @@ type ApprovalDecisionHandler = (
 ) => Promise<unknown>;
 
 let approvalDecisionHandler: ApprovalDecisionHandler | null = null;
+let changeRequestDecisionHandler: ApprovalDecisionHandler | null = null;
 
 export function setApprovalDecisionHandler(handler: ApprovalDecisionHandler) {
   approvalDecisionHandler = handler;
+}
+
+export function setChangeRequestDecisionHandler(handler: ApprovalDecisionHandler) {
+  changeRequestDecisionHandler = handler;
 }
 
 async function discordFetch(path: string, options: RequestInit = {}) {
@@ -181,21 +186,51 @@ export async function handleDiscordInteraction(req: Request, res: Response) {
   if (interaction.type === INTERACTION_TYPE_MESSAGE_COMPONENT) {
     const customId = interaction.data?.custom_id as string;
 
+    const userId = interaction.member?.user?.id ?? interaction.user?.id ?? "unknown";
+    const source = `discord-button:${userId}`;
+
+    // Handle change request buttons
+    if (customId?.startsWith("change_")) {
+      const [action, changeId] = customId.split(/:(.+)/);
+      const decision = action === "change_allow" ? "allow" : "deny";
+
+      let resolveError: string | null = null;
+      if (changeRequestDecisionHandler) {
+        try {
+          await changeRequestDecisionHandler(changeId, decision, source);
+        } catch (error) {
+          resolveError = (error as Error).message;
+          console.warn(`Failed to resolve change request ${changeId}: ${resolveError}`);
+        }
+      }
+
+      const label = decision === "allow" ? "Approved" : "Rejected";
+      res.json({
+        type: 7,
+        data: {
+          content: resolveError
+            ? `Failed to resolve change request: ${resolveError}`
+            : `Change request **${label}** by <@${userId}>.`,
+          components: [],
+        },
+      });
+      return;
+    }
+
+    // Handle approval buttons
     if (!customId?.startsWith("approval_")) {
       res.json({ type: RESPONSE_TYPE_DEFERRED_UPDATE_MESSAGE });
       return;
     }
 
     const [action, approvalId] = customId.split(/:(.+)/);
-    const decision = action === "approval_allow" ? "allow" : "deny";
-    const userId = interaction.member?.user?.id ?? interaction.user?.id ?? "unknown";
-    const source = `discord-button:${userId}`;
+    const approvalDecision = action === "approval_allow" ? "allow" : "deny";
 
     // Resolve the approval BEFORE responding (Vercel kills the function after res.json)
     let resolveError: string | null = null;
     if (approvalDecisionHandler) {
       try {
-        await approvalDecisionHandler(approvalId, decision, source);
+        await approvalDecisionHandler(approvalId, approvalDecision, source);
       } catch (error) {
         resolveError = (error as Error).message;
         console.warn(
@@ -204,7 +239,7 @@ export async function handleDiscordInteraction(req: Request, res: Response) {
       }
     }
 
-    const label = decision === "allow" ? "Allowed" : "Denied";
+    const label = approvalDecision === "allow" ? "Allowed" : "Denied";
 
     // Respond with an updated message (buttons replaced with result)
     res.json({

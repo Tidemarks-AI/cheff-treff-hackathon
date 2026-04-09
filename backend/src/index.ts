@@ -24,11 +24,13 @@ import {
   markDiscordApprovalResolved,
   postApprovalToDiscord,
   setApprovalDecisionHandler,
+  setChangeRequestDecisionHandler,
 } from "./lib/discord-approvals.js";
 import {
   createPolicy,
   deletePolicy,
   getPolicy,
+  getToolPolicyDecision,
   type FunctionPolicyDraftCondition,
   listPolicies,
   updatePolicy,
@@ -37,6 +39,21 @@ import {
   type FunctionPolicyDraft,
   type PolicyOperator,
 } from "./lib/policies.js";
+import {
+  approveChangeRequest,
+  applyChangeRequestProposal,
+  createChangeRequest,
+  getChangeRequest,
+  listChangeRequests,
+  rejectChangeRequest,
+  updateChangeRequestDiscord,
+} from "./lib/change-requests.js";
+import { addSSEClient, broadcastSSE } from "./lib/sse.js";
+import { createOfficeLeaseDraft, seedForecastBase } from "./lib/fixtures.js";
+import {
+  postChangeRequestToDiscord,
+  markChangeRequestDiscordResolved,
+} from "./lib/discord-change-requests.js";
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -237,7 +254,45 @@ setApprovalDecisionHandler(async (approvalId, decision, source) => {
   await resolvePendingApproval(approvalId, decision, source);
 });
 
-app.use(cors({ origin: process.env.CORS_ORIGIN || "http://localhost:5173" }));
+// Wire up Discord handler for change request buttons
+setChangeRequestDecisionHandler(async (changeId, decision, source) => {
+  const surrealDbName = process.env.DEFAULT_SURREAL_DB || "acme_startup_gmbh";
+  const db = await getCompanyDB(surrealDbName);
+  try {
+    const cr =
+      decision === "allow"
+        ? await approveChangeRequest(db, changeId, source)
+        : await rejectChangeRequest(db, changeId, source);
+
+    if (!cr) throw new Error(`Unknown change request '${changeId}'`);
+
+    if (decision === "allow") {
+      await applyChangeRequestProposal(db, cr);
+    }
+
+    await markChangeRequestDiscordResolved(cr, decision, source);
+    broadcastSSE("change:updated", cr);
+  } finally {
+    await db.close();
+  }
+});
+
+// Seed a default policy: fixed costs > 3000 EUR require approval
+const existingPolicies = listPolicies();
+if (!existingPolicies.some((p) => p.toolName === "createFixedCost")) {
+  createPolicy({
+    toolName: "createFixedCost",
+    action: "auto_deny",
+    conditionGroup: "all",
+    conditions: [
+      { field: "monthly_amount", operator: "gt", value: 3000 },
+    ],
+    enabled: true,
+  });
+  console.log("Seeded default policy: createFixedCost monthly_amount > 3000");
+}
+
+app.use(cors({ origin: process.env.CORS_ORIGIN || /localhost:\d+/ }));
 
 // Discord interactions endpoint needs raw body for signature verification.
 // Must be registered before express.json() middleware.
@@ -312,7 +367,7 @@ app.get("/api/surreal/:table", async (req, res) => {
     const db = await getCompanyDB(surrealDbName);
     try {
       const { table } = req.params;
-      const result = await db.select(table);
+      const [result] = await db.query(`SELECT * FROM type::table($table)`, { table });
       res.json({ data: result });
     } finally {
       await db.close();
@@ -330,7 +385,10 @@ app.post("/api/surreal/:table", async (req, res) => {
     const db = await getCompanyDB(surrealDbName);
     try {
       const { table } = req.params;
-      const result = await db.create(table, req.body);
+      const [result] = await db.query(
+        `CREATE type::table($table) CONTENT $data`,
+        { table, data: req.body }
+      );
       res.status(201).json({ data: result });
     } finally {
       await db.close();
@@ -369,6 +427,159 @@ app.get("/api/user-companies", async (req, res) => {
     res.status(500).json({ error: (e as Error).message });
   }
 });
+
+// ── Change Request routes ───────────────────────────────────
+
+app.get("/api/stream", (req, res) => {
+  addSSEClient(res);
+});
+
+app.get("/api/changes", async (req, res) => {
+  try {
+    const surrealDbName = await resolveCompanyDB(req);
+    const db = await getCompanyDB(surrealDbName);
+    try {
+      const changes = await listChangeRequests(db);
+      res.json({ changes });
+    } finally {
+      await db.close();
+    }
+  } catch (e) {
+    const status = (e as Error).message.includes("auth") ? 401 : 500;
+    res.status(status).json({ error: (e as Error).message });
+  }
+});
+
+app.get("/api/ontology/finance", async (req, res) => {
+  try {
+    const surrealDbName = await resolveCompanyDB(req);
+    const db = await getCompanyDB(surrealDbName);
+    try {
+      // Query finance subgraph from SurrealDB
+      const [costCenters] = await db.query("SELECT * FROM cost_center");
+      const [fixedExpenses] = await db.query("SELECT * FROM fixed_expense");
+      const [budgetLines] = await db.query("SELECT * FROM budget_line");
+      const [variances] = await db.query("SELECT * FROM variance");
+      const [bankAccounts] = await db.query("SELECT * FROM bank_account");
+      const [runwayCalcs] = await db.query("SELECT * FROM runway_calculation");
+
+      res.json({
+        costCenters,
+        fixedExpenses,
+        budgetLines,
+        variances,
+        bankAccounts,
+        runwayCalculations: runwayCalcs,
+        forecastBase: seedForecastBase(),
+      });
+    } finally {
+      await db.close();
+    }
+  } catch (e) {
+    const status = (e as Error).message.includes("auth") ? 401 : 500;
+    res.status(status).json({ error: (e as Error).message });
+  }
+});
+
+app.post("/api/changes/:id/approve", async (req, res) => {
+  try {
+    const surrealDbName = await resolveCompanyDB(req);
+    const db = await getCompanyDB(surrealDbName);
+    try {
+      const cr = await approveChangeRequest(db, req.params.id, "ui");
+      if (!cr) {
+        res.status(404).json({ error: `Unknown change request '${req.params.id}'` });
+        return;
+      }
+
+      await applyChangeRequestProposal(db, cr);
+      broadcastSSE("change:updated", cr);
+      markChangeRequestDiscordResolved(cr, "allow", "ui").catch(() => {});
+
+      res.json({ change: cr });
+    } finally {
+      await db.close();
+    }
+  } catch (e) {
+    const status = (e as Error).message.includes("auth") ? 401 : 500;
+    res.status(status).json({ error: (e as Error).message });
+  }
+});
+
+app.post("/api/changes/:id/reject", async (req, res) => {
+  try {
+    const surrealDbName = await resolveCompanyDB(req);
+    const db = await getCompanyDB(surrealDbName);
+    try {
+      const cr = await rejectChangeRequest(db, req.params.id, "ui");
+      if (!cr) {
+        res.status(404).json({ error: `Unknown change request '${req.params.id}'` });
+        return;
+      }
+
+      broadcastSSE("change:updated", cr);
+      markChangeRequestDiscordResolved(cr, "deny", "ui").catch(() => {});
+
+      res.json({ change: cr });
+    } finally {
+      await db.close();
+    }
+  } catch (e) {
+    const status = (e as Error).message.includes("auth") ? 401 : 500;
+    res.status(status).json({ error: (e as Error).message });
+  }
+});
+
+app.post("/api/debug/seed", async (req, res) => {
+  try {
+    const surrealDbName = await resolveCompanyDB(req);
+    const db = await getCompanyDB(surrealDbName);
+    try {
+      const draft = createOfficeLeaseDraft();
+
+      // Evaluate policy
+      const policyDecision = getToolPolicyDecision(
+        "createFixedCost",
+        draft.proposal_values
+      );
+      if (policyDecision.policy) {
+        draft.policy_triggered = [policyDecision.policy.id];
+        draft.policy_satisfied = policyDecision.decision === "auto_allow";
+        if (policyDecision.decision !== "auto_allow") {
+          draft.policy_message =
+            draft.policy_message ??
+            `Policy '${policyDecision.policy.toolName}' requires approval.`;
+        }
+      }
+
+      const cr = await createChangeRequest(db, draft);
+      broadcastSSE("change:new", cr);
+
+      // Post to Discord (non-blocking)
+      postChangeRequestToDiscord(cr)
+        .then(async (discord) => {
+          if (discord) {
+            await updateChangeRequestDiscord(
+              db,
+              String(cr.id).replace("change_request:", ""),
+              discord.discordMessageId,
+              discord.discordChannelId
+            );
+          }
+        })
+        .catch((err) => console.warn("Discord post failed:", err));
+
+      res.status(201).json({ change: cr });
+    } finally {
+      await db.close();
+    }
+  } catch (e) {
+    const status = (e as Error).message.includes("auth") ? 401 : 500;
+    res.status(status).json({ error: (e as Error).message });
+  }
+});
+
+// ── Legacy routes ───────────────────────────────────────────
 
 app.get("/api/test-db", async (_req, res) => {
   try {
@@ -604,7 +815,45 @@ app.post("/api/agents/:agentId/stream", async (req, res) => {
   }
 });
 
+// ── Gmail OAuth flow endpoints ──────────────────────────────
+
+app.get("/api/auth/gmail", async (_req, res) => {
+  try {
+    const { getOAuth2Client } = await import("./lib/gmail.js");
+    const oauth2Client = await getOAuth2Client();
+    const url = oauth2Client.generateAuthUrl({
+      access_type: "offline",
+      scope: ["https://www.googleapis.com/auth/gmail.modify"],
+      prompt: "consent",
+    });
+    res.redirect(url);
+  } catch (e) {
+    res.status(500).json({ error: (e as Error).message });
+  }
+});
+
+app.get("/api/auth/gmail/callback", async (req, res) => {
+  try {
+    const { getOAuth2Client } = await import("./lib/gmail.js");
+    const oauth2Client = await getOAuth2Client();
+    const { tokens } = await oauth2Client.getToken(req.query.code as string);
+    res.json({
+      message: "Add this refresh_token to your .env as GMAIL_REFRESH_TOKEN",
+      refresh_token: tokens.refresh_token,
+    });
+  } catch (e) {
+    res.status(500).json({ error: (e as Error).message });
+  }
+});
+
+// ── Start server ────────────────────────────────────────────
+
 if (!process.env.VERCEL) {
+  // Start Gmail poller if configured
+  import("./lib/gmail-poller.js")
+    .then(({ startGmailPoller }) => startGmailPoller())
+    .catch(() => console.log("Gmail poller module not available"));
+
   app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
   });

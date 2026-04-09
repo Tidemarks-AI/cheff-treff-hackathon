@@ -11,6 +11,7 @@ import Agents from "./pages/Agents"
 import Finance from "./pages/Finance"
 import Login from "./pages/Login"
 import Home from "./pages/Home"
+import Changes from "./pages/Changes"
 
 const rootRoute = createRootRoute({
   component: Outlet,
@@ -62,9 +63,15 @@ const adminRoute = createRoute({
   component: Agents,
 })
 
+const changesRoute = createRoute({
+  getParentRoute: () => authenticatedLayout,
+  path: "/changes",
+  component: Changes,
+})
+
 const routeTree = rootRoute.addChildren([
   loginRoute,
-  authenticatedLayout.addChildren([indexRoute, financeRoute, adminRoute]),
+  authenticatedLayout.addChildren([indexRoute, financeRoute, changesRoute, adminRoute]),
 ])
 
 export const router = createRouter({ routeTree })
