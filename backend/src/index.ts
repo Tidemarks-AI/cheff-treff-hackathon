@@ -684,7 +684,7 @@ app.post("/api/policies", (req, res) => {
   }
 });
 
-app.patch("/api/policies/:policyId", (req, res) => {
+app.patch("/api/policies/:policyId", (req: any, res: any) => {
   try {
     const { policyId } = req.params;
     const existingPolicy = getPolicy(policyId);
@@ -708,7 +708,7 @@ app.patch("/api/policies/:policyId", (req, res) => {
   }
 });
 
-app.delete("/api/policies/:policyId", (req, res) => {
+app.delete("/api/policies/:policyId", (req: any, res: any) => {
   const { policyId } = req.params;
 
   if (!deletePolicy(policyId)) {
@@ -719,7 +719,7 @@ app.delete("/api/policies/:policyId", (req, res) => {
   res.status(204).end();
 });
 
-app.post("/api/agent", async (req, res) => {
+app.post("/api/agent", async (req: any, res: any) => {
   try {
     const defaultAgentId = await getDefaultAgentId();
     const agentId = req.body.agentId ?? defaultAgentId;
@@ -744,7 +744,7 @@ app.post("/api/agent", async (req, res) => {
   }
 });
 
-app.post("/api/agents/:agentId/run", async (req, res) => {
+app.post("/api/agents/:agentId/run", async (req: any, res: any) => {
   try {
     const { agentId } = req.params;
     const { message } = req.body;
@@ -762,7 +762,7 @@ app.post("/api/agents/:agentId/run", async (req, res) => {
   }
 });
 
-app.post("/api/approvals/:approvalId/accept", async (req, res) => {
+app.post("/api/approvals/:approvalId/accept", async (req: any, res: any) => {
   try {
     const { approvalId } = req.params;
     res.json(await resolvePendingApproval(approvalId, "allow", "ui"));
@@ -774,7 +774,7 @@ app.post("/api/approvals/:approvalId/accept", async (req, res) => {
   }
 });
 
-app.post("/api/approvals/:approvalId/deny", async (req, res) => {
+app.post("/api/approvals/:approvalId/deny", async (req: any, res: any) => {
   try {
     const { approvalId } = req.params;
     res.json(await resolvePendingApproval(approvalId, "deny", "ui"));
@@ -786,7 +786,7 @@ app.post("/api/approvals/:approvalId/deny", async (req, res) => {
   }
 });
 
-app.post("/api/agents/:agentId/stream", async (req, res) => {
+app.post("/api/agents/:agentId/stream", async (req: any, res: any) => {
   const abortController = new AbortController();
 
   res.on("close", () => {
@@ -835,7 +835,7 @@ app.post("/api/agents/:agentId/stream", async (req, res) => {
 
 // ── Gmail OAuth flow endpoints ──────────────────────────────
 
-app.get("/api/auth/gmail", async (_req, res) => {
+app.get("/api/auth/gmail", async (_req: any, res: any) => {
   try {
     const { getOAuth2Client } = await import("./lib/gmail.js");
     const oauth2Client = await getOAuth2Client();
@@ -850,7 +850,7 @@ app.get("/api/auth/gmail", async (_req, res) => {
   }
 });
 
-app.get("/api/auth/gmail/callback", async (req, res) => {
+app.get("/api/auth/gmail/callback", async (req: any, res: any) => {
   try {
     const { getOAuth2Client } = await import("./lib/gmail.js");
     const oauth2Client = await getOAuth2Client();
