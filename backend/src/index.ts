@@ -15,7 +15,6 @@ import {
   createPendingApprovals,
   deletePendingApproval,
   getPendingApproval,
-  getPendingApprovalByDiscordMessageId,
   listPendingApprovals,
   updatePendingApproval,
 } from "./lib/approvals.js";
@@ -233,14 +232,8 @@ async function resolvePendingApproval(
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 25 * 1024 * 1024 } });
 
 // Wire up the Discord interaction handler to resolve approvals
-setApprovalDecisionHandler(async (discordMessageId, decision, source) => {
-  const approval = await getPendingApprovalByDiscordMessageId(discordMessageId);
-
-  if (!approval) {
-    return;
-  }
-
-  await resolvePendingApproval(approval.id, decision, source);
+setApprovalDecisionHandler(async (approvalId, decision, source) => {
+  await resolvePendingApproval(approvalId, decision, source);
 });
 
 app.use(cors({ origin: process.env.CORS_ORIGIN || "http://localhost:5173" }));
