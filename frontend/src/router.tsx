@@ -12,6 +12,7 @@ import Finance from "./pages/Finance"
 import Login from "./pages/Login"
 import Home from "./pages/Home"
 import Changes from "./pages/Changes"
+import WhatIf from "./pages/WhatIf"
 
 const rootRoute = createRootRoute({
   component: Outlet,
@@ -69,9 +70,15 @@ const changesRoute = createRoute({
   component: Changes,
 })
 
+const whatIfRoute = createRoute({
+  getParentRoute: () => authenticatedLayout,
+  path: "/whatif",
+  component: WhatIf,
+})
+
 const routeTree = rootRoute.addChildren([
   loginRoute,
-  authenticatedLayout.addChildren([indexRoute, financeRoute, changesRoute, adminRoute]),
+  authenticatedLayout.addChildren([indexRoute, financeRoute, changesRoute, whatIfRoute, adminRoute]),
 ])
 
 export const router = createRouter({ routeTree })

@@ -26,6 +26,7 @@ export default function App() {
         </Link>
         <nav className="ml-8 flex items-center gap-6">
           <Link to="/changes" className="text-sm text-muted-foreground transition-colors hover:text-foreground">Changes</Link>
+          <Link to="/whatif" className="text-sm text-muted-foreground transition-colors hover:text-foreground">What If</Link>
         </nav>
         <div className="ml-auto flex items-center gap-3">
           <VoiceCommandBar
