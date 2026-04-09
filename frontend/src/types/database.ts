@@ -12,353 +12,92 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
   public: {
     Tables: {
-      actuals: {
+      pending_approvals: {
         Row: {
-          actual_amount: number
-          category: string
-          cost_center_id: string
+          agent_id: string
+          call_id: string
           created_at: string
-          currency: string
-          description: string | null
+          description: string
+          discord_channel_id: string | null
+          discord_guild_id: string | null
+          discord_message_id: string | null
           id: string
-          month: string
-          source: string
-          source_ref: string | null
-        }
-        Insert: {
-          actual_amount?: number
-          category: string
-          cost_center_id: string
-          created_at?: string
-          currency?: string
-          description?: string | null
-          id?: string
-          month: string
-          source?: string
-          source_ref?: string | null
-        }
-        Update: {
-          actual_amount?: number
-          category?: string
-          cost_center_id?: string
-          created_at?: string
-          currency?: string
-          description?: string | null
-          id?: string
-          month?: string
-          source?: string
-          source_ref?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "actuals_cost_center_id_fkey"
-            columns: ["cost_center_id"]
-            isOneToOne: false
-            referencedRelation: "cost_centers"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      budget_lines: {
-        Row: {
-          category: string
-          cost_center_id: string
-          created_at: string
-          currency: string
-          id: string
-          month: string
-          notes: string | null
-          planned_amount: number
-        }
-        Insert: {
-          category: string
-          cost_center_id: string
-          created_at?: string
-          currency?: string
-          id?: string
-          month: string
-          notes?: string | null
-          planned_amount?: number
-        }
-        Update: {
-          category?: string
-          cost_center_id?: string
-          created_at?: string
-          currency?: string
-          id?: string
-          month?: string
-          notes?: string | null
-          planned_amount?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "budget_lines_cost_center_id_fkey"
-            columns: ["cost_center_id"]
-            isOneToOne: false
-            referencedRelation: "cost_centers"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      companies: {
-        Row: {
-          created_at: string
-          id: string
-          name: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          name: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          name?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      company_members: {
-        Row: {
-          company_id: string
-          created_at: string
-          id: string
-          person_id: string
-          role: string | null
-        }
-        Insert: {
-          company_id: string
-          created_at?: string
-          id?: string
-          person_id: string
-          role?: string | null
-        }
-        Update: {
-          company_id?: string
-          created_at?: string
-          id?: string
-          person_id?: string
-          role?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "company_members_company_id_fkey"
-            columns: ["company_id"]
-            isOneToOne: false
-            referencedRelation: "companies"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "company_members_person_id_fkey"
-            columns: ["person_id"]
-            isOneToOne: false
-            referencedRelation: "people"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      cost_centers: {
-        Row: {
-          company_id: string
-          created_at: string
-          id: string
-          name: string
-          owner_email: string | null
-        }
-        Insert: {
-          company_id: string
-          created_at?: string
-          id?: string
-          name: string
-          owner_email?: string | null
-        }
-        Update: {
-          company_id?: string
-          created_at?: string
-          id?: string
-          name?: string
-          owner_email?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "cost_centers_company_id_fkey"
-            columns: ["company_id"]
-            isOneToOne: false
-            referencedRelation: "companies"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      fixed_costs: {
-        Row: {
-          amount: number
-          category: string
-          cost_center_id: string
-          created_at: string
-          currency: string
-          end_date: string | null
-          id: string
-          name: string
-          source: string | null
-          source_ref: string | null
-          start_date: string
-          updated_at: string
-        }
-        Insert: {
-          amount: number
-          category: string
-          cost_center_id: string
-          created_at?: string
-          currency?: string
-          end_date?: string | null
-          id?: string
-          name: string
-          source?: string | null
-          source_ref?: string | null
-          start_date: string
-          updated_at?: string
-        }
-        Update: {
-          amount?: number
-          category?: string
-          cost_center_id?: string
-          created_at?: string
-          currency?: string
-          end_date?: string | null
-          id?: string
-          name?: string
-          source?: string | null
-          source_ref?: string | null
-          start_date?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "fixed_costs_cost_center_id_fkey"
-            columns: ["cost_center_id"]
-            isOneToOne: false
-            referencedRelation: "cost_centers"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      people: {
-        Row: {
-          created_at: string
-          email: string | null
-          full_name: string
-          id: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          email?: string | null
-          full_name: string
-          id?: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          email?: string | null
-          full_name?: string
-          id?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      variances: {
-        Row: {
-          actual_amount: number
-          category: string
-          cost_center_id: string
-          explained_at: string | null
-          explanation: string | null
-          id: string
-          month: string
-          planned_amount: number
+          parameters: Json
+          resolved_at: string | null
+          resolved_by: string | null
+          run_state: string
           status: string
-          updated_at: string
-          variance_amount: number | null
-          variance_pct: number | null
+          tool_name: string
         }
         Insert: {
-          actual_amount?: number
-          category: string
-          cost_center_id: string
-          explained_at?: string | null
-          explanation?: string | null
+          agent_id: string
+          call_id: string
+          created_at?: string
+          description?: string
+          discord_channel_id?: string | null
+          discord_guild_id?: string | null
+          discord_message_id?: string | null
           id?: string
-          month: string
-          planned_amount?: number
+          parameters?: Json
+          resolved_at?: string | null
+          resolved_by?: string | null
+          run_state: string
           status?: string
-          updated_at?: string
-          variance_amount?: number | null
-          variance_pct?: number | null
+          tool_name: string
         }
         Update: {
-          actual_amount?: number
-          category?: string
-          cost_center_id?: string
-          explained_at?: string | null
-          explanation?: string | null
+          agent_id?: string
+          call_id?: string
+          created_at?: string
+          description?: string
+          discord_channel_id?: string | null
+          discord_guild_id?: string | null
+          discord_message_id?: string | null
           id?: string
-          month?: string
-          planned_amount?: number
+          parameters?: Json
+          resolved_at?: string | null
+          resolved_by?: string | null
+          run_state?: string
           status?: string
-          updated_at?: string
-          variance_amount?: number | null
-          variance_pct?: number | null
+          tool_name?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "variances_cost_center_id_fkey"
-            columns: ["cost_center_id"]
-            isOneToOne: false
-            referencedRelation: "cost_centers"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
+      }
+      user_companies: {
+        Row: {
+          company_name: string
+          created_at: string
+          id: string
+          role: string
+          surreal_db: string
+          user_id: string
+        }
+        Insert: {
+          company_name: string
+          created_at?: string
+          id?: string
+          role?: string
+          surreal_db: string
+          user_id: string
+        }
+        Update: {
+          company_name?: string
+          created_at?: string
+          id?: string
+          role?: string
+          surreal_db?: string
+          user_id?: string
+        }
+        Relationships: []
       }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      generate_fixed_costs: { Args: { p_month: string }; Returns: undefined }
-      recompute_variance: {
-        Args: { p_category: string; p_cost_center_id: string; p_month: string }
-        Returns: undefined
-      }
+      [_ in never]: never
     }
     Enums: {
       [_ in never]: never
@@ -487,9 +226,6 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {},
   },

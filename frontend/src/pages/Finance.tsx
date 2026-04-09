@@ -12,6 +12,8 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@startupos/ui"
 
+const API_URL = import.meta.env.VITE_API_URL || ""
+
 type CostCenter = { id: string; name: string }
 type Variance = {
   id: string
@@ -22,18 +24,18 @@ type Variance = {
   variance_amount: number | null
   variance_pct: number | null
   status: string
-  cost_centers: { name: string } | null
+  cost_center_name: string
 }
-type FixedCost = {
+type FixedExpense = {
   id: string
   name: string
-  category: string
   amount: number
   currency: string
+  frequency: string
   start_date: string
   end_date: string | null
-  source: string | null
-  cost_centers: { name: string } | null
+  source_system: string | null
+  cost_center_name: string
 }
 type BudgetLine = {
   id: string
@@ -49,6 +51,24 @@ type Actual = {
   actual_amount: number
   source: string
   description: string | null
+}
+
+async function surrealQuery<T>(query: string, vars?: Record<string, unknown>): Promise<T[]> {
+  const session = await supabase.auth.getSession()
+  const token = session.data.session?.access_token
+  const res = await fetch(`${API_URL}/api/surreal/query`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify({ query, vars }),
+  })
+  if (!res.ok) throw new Error(`API error: ${res.status}`)
+  const json = await res.json()
+  // SurrealDB returns an array of results (one per statement)
+  const results = json.data
+  return Array.isArray(results) ? (results[0] ?? []) : []
 }
 
 const fmtCurrency = (n: number) =>
@@ -73,51 +93,59 @@ const statusBadge = (status: string) => {
 export default function Finance() {
   const [costCenters, setCostCenters] = useState<CostCenter[]>([])
   const [variances, setVariances] = useState<Variance[]>([])
-  const [fixedCosts, setFixedCosts] = useState<FixedCost[]>([])
+  const [fixedExpenses, setFixedExpenses] = useState<FixedExpense[]>([])
   const [budgetLines, setBudgetLines] = useState<BudgetLine[]>([])
   const [actuals, setActuals] = useState<Actual[]>([])
   const [selectedCC, setSelectedCC] = useState<string | null>(null)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [loading, setLoading] = useState(true)
 
+  async function loadOverview() {
+    const [ccs, vars, fes] = await Promise.all([
+      surrealQuery<CostCenter>("SELECT id, name FROM cost_center ORDER BY name"),
+      surrealQuery<Variance>(
+        `SELECT id, category, month, planned_amount, actual_amount,
+                (actual_amount - planned_amount) AS variance_amount,
+                variance_pct, status,
+                cost_center.name AS cost_center_name
+         FROM variance ORDER BY month, category`
+      ),
+      surrealQuery<FixedExpense>(
+        `SELECT id, name, amount, currency, frequency, start_date, end_date, source_system,
+                cost_center.name AS cost_center_name
+         FROM fixed_expense ORDER BY name`
+      ),
+    ])
+    setCostCenters(ccs)
+    setVariances(vars)
+    setFixedExpenses(fes)
+  }
+
   // Initial data fetch
   useEffect(() => {
-    async function load() {
-      const [ccRes, varRes, fcRes] = await Promise.all([
-        supabase.from("cost_centers").select("id, name"),
-        supabase
-          .from("variances")
-          .select("*, cost_centers(name)")
-          .order("month")
-          .order("category"),
-        supabase.from("fixed_costs").select("*, cost_centers(name)"),
-      ])
-      if (ccRes.data) setCostCenters(ccRes.data)
-      if (varRes.data) setVariances(varRes.data as Variance[])
-      if (fcRes.data) setFixedCosts(fcRes.data as FixedCost[])
-      setLoading(false)
-    }
-    load()
+    loadOverview()
+      .catch((e) => toast.error("Failed to load finance data: " + e.message))
+      .finally(() => setLoading(false))
   }, [])
 
   // Fetch detail when cost center changes
   useEffect(() => {
     if (!selectedCC) return
     async function loadDetail() {
-      const [blRes, actRes] = await Promise.all([
-        supabase
-          .from("budget_lines")
-          .select("*")
-          .eq("cost_center_id", selectedCC!)
-          .order("month"),
-        supabase
-          .from("actuals")
-          .select("*")
-          .eq("cost_center_id", selectedCC!)
-          .order("month"),
+      const [bls, acts] = await Promise.all([
+        surrealQuery<BudgetLine>(
+          `SELECT id, category, month, planned_amount, notes
+           FROM budget_line WHERE cost_center = $cc ORDER BY month`,
+          { cc: selectedCC }
+        ),
+        surrealQuery<Actual>(
+          `SELECT id, category, month, actual_amount, source, description
+           FROM costs WHERE cost_center = $cc ORDER BY month`,
+          { cc: selectedCC }
+        ),
       ])
-      if (blRes.data) setBudgetLines(blRes.data)
-      if (actRes.data) setActuals(actRes.data)
+      setBudgetLines(bls)
+      setActuals(acts)
     }
     loadDetail()
   }, [selectedCC])
@@ -131,44 +159,64 @@ export default function Finance() {
     const source = (form.get("source") as string) || "manual"
     const description = (form.get("description") as string) || null
 
-    const { error } = await supabase.from("actuals").insert({
-      cost_center_id: selectedCC!,
-      category,
-      month,
-      actual_amount: amount,
-      source,
-      description,
-    })
-    if (error) {
-      toast.error("Failed to add actual: " + error.message)
-      return
+    try {
+      await surrealQuery(
+        `CREATE costs SET
+          cost_center = $cc,
+          category = $category,
+          month = <datetime>$month,
+          actual_amount = <decimal>$amount,
+          source = $source,
+          description = $description`,
+        { cc: selectedCC, category, month: month + "T00:00:00Z", amount, source, description }
+      )
+
+      // Recompute variance: sum actuals, compare with budget
+      await surrealQuery(
+        `LET $planned = (SELECT VALUE planned_amount FROM budget_line WHERE cost_center = $cc AND category = $category AND month = <datetime>$month LIMIT 1);
+         LET $actual_sum = (SELECT VALUE math::sum(actual_amount) FROM costs WHERE cost_center = $cc AND category = $category AND month = <datetime>$month GROUP ALL);
+         UPSERT variance SET
+           cost_center = $cc,
+           category = $category,
+           month = <datetime>$month,
+           planned_amount = $planned[0] ?? 0,
+           actual_amount = $actual_sum[0] ?? 0,
+           variance_pct = IF $planned[0] != NONE AND $planned[0] != 0
+             THEN ($actual_sum[0] ?? 0 - $planned[0]) / $planned[0]
+             ELSE NONE
+           END,
+           status = IF $planned[0] != NONE AND $planned[0] != 0
+             AND math::abs(($actual_sum[0] ?? 0 - $planned[0]) / $planned[0]) > 0.10
+             THEN "flagged"
+             ELSE "ok"
+           END
+         WHERE cost_center = $cc AND category = $category AND month = <datetime>$month`,
+        { cc: selectedCC, category, month: month + "T00:00:00Z" }
+      )
+
+      toast.success("Actual added")
+      setDialogOpen(false)
+
+      // Refresh data
+      const [acts, vars] = await Promise.all([
+        surrealQuery<Actual>(
+          `SELECT id, category, month, actual_amount, source, description
+           FROM costs WHERE cost_center = $cc ORDER BY month`,
+          { cc: selectedCC }
+        ),
+        surrealQuery<Variance>(
+          `SELECT id, category, month, planned_amount, actual_amount,
+                  (actual_amount - planned_amount) AS variance_amount,
+                  variance_pct, status,
+                  cost_center.name AS cost_center_name
+           FROM variance ORDER BY month, category`
+        ),
+      ])
+      setActuals(acts)
+      setVariances(vars)
+    } catch (err) {
+      toast.error("Failed to add actual: " + (err as Error).message)
     }
-
-    // Recompute variance
-    await supabase.rpc("recompute_variance", {
-      p_cost_center_id: selectedCC!,
-      p_category: category,
-      p_month: month,
-    })
-
-    toast.success("Actual added")
-    setDialogOpen(false)
-
-    // Refresh data
-    const [actRes, varRes] = await Promise.all([
-      supabase
-        .from("actuals")
-        .select("*")
-        .eq("cost_center_id", selectedCC!)
-        .order("month"),
-      supabase
-        .from("variances")
-        .select("*, cost_centers(name)")
-        .order("month")
-        .order("category"),
-    ])
-    if (actRes.data) setActuals(actRes.data)
-    if (varRes.data) setVariances(varRes.data as Variance[])
   }
 
   // KPI calculations
@@ -247,7 +295,7 @@ export default function Finance() {
       <Tabs defaultValue="overview">
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="fixed-costs">Fixed Costs</TabsTrigger>
+          <TabsTrigger value="fixed-costs">Fixed Expenses</TabsTrigger>
           <TabsTrigger value="detail">Detail</TabsTrigger>
         </TabsList>
 
@@ -273,7 +321,7 @@ export default function Finance() {
                 <TableBody>
                   {variances.map((v) => (
                     <TableRow key={v.id}>
-                      <TableCell>{v.cost_centers?.name ?? "—"}</TableCell>
+                      <TableCell>{v.cost_center_name ?? "—"}</TableCell>
                       <TableCell>{v.category}</TableCell>
                       <TableCell>{fmtMonth(v.month)}</TableCell>
                       <TableCell className="text-right">
@@ -298,11 +346,11 @@ export default function Finance() {
           </Card>
         </TabsContent>
 
-        {/* Fixed Costs Tab */}
+        {/* Fixed Expenses Tab */}
         <TabsContent value="fixed-costs">
           <Card>
             <CardHeader>
-              <CardTitle>Recurring Fixed Costs</CardTitle>
+              <CardTitle>Recurring Fixed Expenses</CardTitle>
             </CardHeader>
             <CardContent>
               <Table>
@@ -310,27 +358,27 @@ export default function Finance() {
                   <TableRow>
                     <TableHead>Name</TableHead>
                     <TableHead>Cost Center</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead className="text-right">Amount/mo</TableHead>
+                    <TableHead className="text-right">Amount</TableHead>
+                    <TableHead>Frequency</TableHead>
                     <TableHead>Start</TableHead>
                     <TableHead>End</TableHead>
                     <TableHead>Source</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {fixedCosts.map((fc) => (
-                    <TableRow key={fc.id}>
-                      <TableCell className="font-medium">{fc.name}</TableCell>
-                      <TableCell>{fc.cost_centers?.name ?? "—"}</TableCell>
-                      <TableCell>{fc.category}</TableCell>
+                  {fixedExpenses.map((fe) => (
+                    <TableRow key={fe.id}>
+                      <TableCell className="font-medium">{fe.name}</TableCell>
+                      <TableCell>{fe.cost_center_name ?? "—"}</TableCell>
                       <TableCell className="text-right">
-                        {fmtCurrency(fc.amount)}
+                        {fmtCurrency(fe.amount)}
                       </TableCell>
-                      <TableCell>{fmtMonth(fc.start_date)}</TableCell>
+                      <TableCell className="capitalize">{fe.frequency}</TableCell>
+                      <TableCell>{fmtMonth(fe.start_date)}</TableCell>
                       <TableCell>
-                        {fc.end_date ? fmtMonth(fc.end_date) : "Ongoing"}
+                        {fe.end_date ? fmtMonth(fe.end_date) : "Ongoing"}
                       </TableCell>
-                      <TableCell>{fc.source ?? "—"}</TableCell>
+                      <TableCell>{fe.source_system ?? "—"}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

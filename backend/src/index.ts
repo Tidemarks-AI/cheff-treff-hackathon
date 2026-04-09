@@ -5,6 +5,7 @@ import multer from "multer";
 import { RunState, run, type RunResult } from "@openai/agents";
 import { getSupabase } from "./lib/supabase.js";
 import { getOpenAI } from "./lib/openai.js";
+import { getCompanyDB } from "./lib/surrealdb.js";
 import { getAgent, getDefaultAgentId, listAgents } from "./lib/agents.js";
 import {
   getToolDefinition,
@@ -250,6 +251,123 @@ app.use(express.json());
 
 app.get("/health", (_req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
+});
+
+// ── SurrealDB company data routes ───────────────────────────
+
+// Resolve user's company database from Supabase auth token
+async function resolveCompanyDB(req: express.Request): Promise<string> {
+  const authHeader = req.headers.authorization;
+  if (!authHeader?.startsWith("Bearer ")) {
+    throw new Error("Missing authorization header");
+  }
+
+  const token = authHeader.slice(7);
+  const supabase = getSupabase();
+  const { data: { user }, error } = await supabase.auth.getUser(token);
+
+  if (error || !user) {
+    throw new Error("Invalid auth token");
+  }
+
+  // Check for explicit db query param first, then look up user's default company
+  const dbParam = req.query.db as string | undefined;
+  if (dbParam) return dbParam;
+
+  const { data: mappings } = await supabase
+    .from("user_companies")
+    .select("surreal_db")
+    .eq("user_id", user.id)
+    .limit(1);
+
+  if (!mappings || mappings.length === 0) {
+    throw new Error("User has no company assigned");
+  }
+
+  return mappings[0].surreal_db;
+}
+
+// Generic query endpoint for SurrealDB
+app.post("/api/surreal/query", async (req, res) => {
+  try {
+    const surrealDbName = await resolveCompanyDB(req);
+    const db = await getCompanyDB(surrealDbName);
+    try {
+      const { query, vars } = req.body;
+      const result = await db.query(query, vars);
+      res.json({ data: result });
+    } finally {
+      await db.close();
+    }
+  } catch (e) {
+    const status = (e as Error).message.includes("auth") ? 401 : 500;
+    res.status(status).json({ error: (e as Error).message });
+  }
+});
+
+// Get all records from a table
+app.get("/api/surreal/:table", async (req, res) => {
+  try {
+    const surrealDbName = await resolveCompanyDB(req);
+    const db = await getCompanyDB(surrealDbName);
+    try {
+      const { table } = req.params;
+      const result = await db.select(table);
+      res.json({ data: result });
+    } finally {
+      await db.close();
+    }
+  } catch (e) {
+    const status = (e as Error).message.includes("auth") ? 401 : 500;
+    res.status(status).json({ error: (e as Error).message });
+  }
+});
+
+// Create a record in a table
+app.post("/api/surreal/:table", async (req, res) => {
+  try {
+    const surrealDbName = await resolveCompanyDB(req);
+    const db = await getCompanyDB(surrealDbName);
+    try {
+      const { table } = req.params;
+      const result = await db.create(table, req.body);
+      res.status(201).json({ data: result });
+    } finally {
+      await db.close();
+    }
+  } catch (e) {
+    const status = (e as Error).message.includes("auth") ? 401 : 500;
+    res.status(status).json({ error: (e as Error).message });
+  }
+});
+
+// Get user's company mappings
+app.get("/api/user-companies", async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader?.startsWith("Bearer ")) {
+      res.status(401).json({ error: "Missing authorization header" });
+      return;
+    }
+
+    const token = authHeader.slice(7);
+    const supabase = getSupabase();
+    const { data: { user }, error } = await supabase.auth.getUser(token);
+
+    if (error || !user) {
+      res.status(401).json({ error: "Invalid auth token" });
+      return;
+    }
+
+    const { data: companies } = await supabase
+      .from("user_companies")
+      .select("*")
+      .eq("user_id", user.id);
+
+    res.json({ companies: companies || [] });
+  } catch (e) {
+    res.status(500).json({ error: (e as Error).message });
+  }
 });
 
 app.get("/api/test-db", async (_req, res) => {
