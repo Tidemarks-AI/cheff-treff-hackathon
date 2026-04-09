@@ -21,9 +21,9 @@ export const sidebarNav: NavSection[] = [
     label: "Finance",
     icon: Wallet,
     items: [
-      { title: "Runway", href: "#" },
-      { title: "Burn Rate", href: "#" },
-      { title: "Forecasting", href: "#" },
+      { title: "Runway", href: "/finance" },
+      { title: "Burn Rate", href: "/finance" },
+      { title: "Forecasting", href: "/finance" },
     ],
   },
   {

@@ -10,6 +10,7 @@ import App from "./App"
 import Agents from "./pages/Agents"
 import Home from "./pages/Home"
 import Login from "./pages/Login"
+import Finance from "./pages/Finance"
 
 const rootRoute = createRootRoute({
   component: Outlet,
@@ -49,6 +50,12 @@ const indexRoute = createRoute({
   component: Home,
 })
 
+const financeRoute = createRoute({
+  getParentRoute: () => authenticatedLayout,
+  path: "/finance",
+  component: Finance,
+})
+
 const agentsRoute = createRoute({
   getParentRoute: () => authenticatedLayout,
   path: "/debug/agents",
@@ -57,7 +64,7 @@ const agentsRoute = createRoute({
 
 const routeTree = rootRoute.addChildren([
   loginRoute,
-  authenticatedLayout.addChildren([indexRoute, agentsRoute]),
+  authenticatedLayout.addChildren([indexRoute, financeRoute, agentsRoute]),
 ])
 
 export const router = createRouter({ routeTree })
