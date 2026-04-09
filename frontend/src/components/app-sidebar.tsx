@@ -1,5 +1,6 @@
 import { ChevronDown, ChevronsUpDown, LogOut, Rocket } from "lucide-react"
 
+import { useAuth } from "@/contexts/auth-context"
 import { sidebarNav } from "@/components/dashboard/mock-data"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import {
@@ -30,6 +31,10 @@ import {
 } from "@/components/ui/sidebar"
 
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
+  const { user, signOut } = useAuth()
+  const initials = user?.email?.slice(0, 2).toUpperCase() ?? "?"
+  const displayName = user?.user_metadata?.full_name ?? user?.email ?? "User"
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
@@ -93,13 +98,13 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
               >
                 <Avatar className="size-8">
                   <AvatarFallback className="bg-primary/10 text-primary">
-                    JD
+                    {initials}
                   </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">Jane Doe</span>
+                  <span className="truncate font-semibold">{displayName}</span>
                   <span className="truncate text-xs text-muted-foreground">
-                    Founder & CEO
+                    {user?.email}
                   </span>
                 </div>
                 <ChevronsUpDown className="ml-auto size-4" />
@@ -111,7 +116,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
               >
                 <DropdownMenuItem>Account Settings</DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
+                <DropdownMenuItem onClick={() => signOut()}>
                   <LogOut className="mr-2 size-4" />
                   Log out
                 </DropdownMenuItem>
