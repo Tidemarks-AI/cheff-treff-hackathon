@@ -29,6 +29,6 @@
     "@types/express": "^5.0.2"
   },
   "pnpm": {
-    "onlyBuiltDependencies": ["supabase"]
+    "onlyBuiltDependencies": []
   }
 }
