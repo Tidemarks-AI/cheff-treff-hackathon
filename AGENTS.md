@@ -1,4 +1,5 @@
-# AGENTS.md
+# Project
+This is the project "Startup OS" which enables startups to do and help with all the business processes from the beginning with legal paperwork and requirements to the running company with funding rounds and financial forecasts and reporting for shareholders.
 
 ## Project Overview
 
