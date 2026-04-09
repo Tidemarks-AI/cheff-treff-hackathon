@@ -6,6 +6,11 @@ import { getSupabase } from "./lib/supabase.js";
 import { getOpenAI } from "./lib/openai.js";
 import { getAgent, getDefaultAgentId, listAgents } from "./lib/agents.js";
 import {
+  getToolDefinition,
+  listFunctionDefinitions,
+  type PolicyFieldType,
+} from "../tools.js";
+import {
   createPendingApprovals,
   deletePendingApproval,
   getPendingApproval,
@@ -18,9 +23,126 @@ import {
   markDiscordApprovalResolved,
   postApprovalToDiscord,
 } from "./lib/discord-approvals.js";
+import {
+  createPolicy,
+  deletePolicy,
+  getPolicy,
+  type FunctionPolicyDraftCondition,
+  listPolicies,
+  updatePolicy,
+  type PolicyAction,
+  type PolicyConditionGroup,
+  type FunctionPolicyDraft,
+  type PolicyOperator,
+} from "./lib/policies.js";
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+
+const policyOperatorsByType: Record<PolicyFieldType, PolicyOperator[]> = {
+  string: ["eq", "neq", "contains"],
+  number: ["eq", "neq", "lt", "lte", "gt", "gte"],
+  boolean: ["eq", "neq"],
+};
+
+function normalizePolicyValue(value: unknown, fieldType: PolicyFieldType) {
+  if (fieldType === "number") {
+    const normalizedValue = typeof value === "number" ? value : Number(value);
+
+    if (Number.isNaN(normalizedValue)) {
+      throw new Error("Policy value must be a valid number");
+    }
+
+    return normalizedValue;
+  }
+
+  if (fieldType === "boolean") {
+    if (typeof value === "boolean") {
+      return value;
+    }
+
+    if (value === "true") {
+      return true;
+    }
+
+    if (value === "false") {
+      return false;
+    }
+
+    throw new Error("Policy value must be true or false");
+  }
+
+  return String(value ?? "");
+}
+
+function validatePolicyDraft(
+  body: Record<string, unknown>,
+  currentToolName?: string
+): FunctionPolicyDraft {
+  const toolName = String(body.toolName ?? currentToolName ?? "");
+  const action = (body.action as PolicyAction | undefined) ?? "auto_allow";
+  const conditionGroup = (body.conditionGroup as PolicyConditionGroup | undefined) ?? "all";
+  const enabled = body.enabled === undefined ? true : Boolean(body.enabled);
+
+  const toolDefinition = getToolDefinition(toolName as keyof typeof import("../tools.js").toolRegistry);
+
+  if (!toolDefinition) {
+    throw new Error(`Unknown function '${toolName}'`);
+  }
+
+  if (toolDefinition.access !== "mutating") {
+    throw new Error("Policies are only supported for mutating functions");
+  }
+
+  if (action !== "auto_allow" && action !== "auto_deny") {
+    throw new Error(`Unknown policy action '${String(action)}'`);
+  }
+
+  if (conditionGroup !== "all" && conditionGroup !== "any") {
+    throw new Error(`Unknown condition group '${String(conditionGroup)}'`);
+  }
+
+  const conditionsInput = Array.isArray(body.conditions) ? body.conditions : [];
+
+  if (conditionsInput.length === 0) {
+    throw new Error("Policies must define at least one condition");
+  }
+
+  const conditions = conditionsInput.map((condition, index) => {
+    if (!condition || typeof condition !== "object") {
+      throw new Error(`Condition ${index + 1} is invalid`);
+    }
+
+    const field = String((condition as Record<string, unknown>).field ?? "");
+    const operator = (condition as Record<string, unknown>).operator as PolicyOperator;
+    const policyField = toolDefinition.policyFields.find((entry) => entry.name === field);
+
+    if (!policyField) {
+      throw new Error(`Unknown policy field '${field}' for function '${toolName}'`);
+    }
+
+    if (!policyOperatorsByType[policyField.type].includes(operator)) {
+      throw new Error(`Operator '${operator}' is not valid for field '${field}'`);
+    }
+
+    return {
+      field,
+      operator,
+      value: normalizePolicyValue(
+        (condition as Record<string, unknown>).value,
+        policyField.type
+      ),
+    } satisfies FunctionPolicyDraftCondition;
+  });
+
+  return {
+    toolName,
+    action,
+    conditionGroup,
+    conditions,
+    enabled,
+  };
+}
 
 function formatReply(output: unknown) {
   return typeof output === "string" ? output : JSON.stringify(output);
@@ -147,6 +269,58 @@ app.get("/api/agents", async (_req, res) => {
 
 app.get("/api/approvals", (_req, res) => {
   res.json({ approvals: listPendingApprovals() });
+});
+
+app.get("/api/functions", (_req, res) => {
+  res.json({ functions: listFunctionDefinitions() });
+});
+
+app.get("/api/policies", (_req, res) => {
+  res.json({ policies: listPolicies() });
+});
+
+app.post("/api/policies", (req, res) => {
+  try {
+    const policy = createPolicy(validatePolicyDraft(req.body as Record<string, unknown>));
+    res.status(201).json({ policy });
+  } catch (e) {
+    res.status(400).json({ error: (e as Error).message });
+  }
+});
+
+app.patch("/api/policies/:policyId", (req, res) => {
+  try {
+    const { policyId } = req.params;
+    const existingPolicy = getPolicy(policyId);
+
+    if (!existingPolicy) {
+      res.status(404).json({ error: `Unknown policy '${policyId}'` });
+      return;
+    }
+
+    const policy = updatePolicy(
+      policyId,
+      validatePolicyDraft(
+        { ...existingPolicy, ...(req.body as Record<string, unknown>) },
+        existingPolicy.toolName
+      )
+    );
+
+    res.json({ policy });
+  } catch (e) {
+    res.status(400).json({ error: (e as Error).message });
+  }
+});
+
+app.delete("/api/policies/:policyId", (req, res) => {
+  const { policyId } = req.params;
+
+  if (!deletePolicy(policyId)) {
+    res.status(404).json({ error: `Unknown policy '${policyId}'` });
+    return;
+  }
+
+  res.status(204).end();
 });
 
 app.post("/api/agent", async (req, res) => {

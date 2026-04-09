@@ -1,30 +1,71 @@
 import { tool, type Tool } from "@openai/agents";
 import { z } from "zod";
 import { getSupabase } from "./src/lib/supabase.js";
+import { getToolPolicyDecision } from "./src/lib/policies.js";
 
 export type ToolAccess = "read_only" | "mutating";
+export type PolicyFieldType = "string" | "number" | "boolean";
+
+export type ToolPolicyFieldDefinition = {
+  name: string;
+  label: string;
+  type: PolicyFieldType;
+  description?: string;
+};
 
 type ToolDefinition<TTool extends Tool = Tool> = {
   tool: TTool;
   access: ToolAccess;
   approvalDescription: string;
+  name: string;
+  description: string;
+  policyFields: ToolPolicyFieldDefinition[];
 };
 
 function defineTool({
   access,
   approvalDescription,
+  policyFields = [],
   ...options
 }: Parameters<typeof tool>[0] & {
   access: ToolAccess;
   approvalDescription?: string;
+  policyFields?: ToolPolicyFieldDefinition[];
 }) {
+  if (!options.name) {
+    throw new Error("All tools must define a name");
+  }
+
+  const originalExecute = options.execute;
+
   return {
     tool: tool({
       ...options,
-      needsApproval: access === "mutating",
+      needsApproval: async (_runContext, input) =>
+        access === "mutating" &&
+        getToolPolicyDecision(options.name!, input).decision === "require_approval",
+      execute: async (input, context, details) => {
+        if (access === "mutating") {
+          const policyDecision = getToolPolicyDecision(options.name!, input);
+
+          if (policyDecision.decision === "auto_deny") {
+            return {
+              denied: true,
+              message: `Execution of ${options.name} was blocked by policy.`,
+              policyId: policyDecision.policy?.id,
+              action: policyDecision.decision,
+            };
+          }
+        }
+
+        return originalExecute(input as never, context, details as never);
+      },
     } as Parameters<typeof tool>[0]),
     access,
+    name: options.name,
+    description: options.description,
     approvalDescription: approvalDescription ?? options.description,
+    policyFields,
   } satisfies ToolDefinition;
 }
 
@@ -97,6 +138,26 @@ const simulateBudgetUpdate = defineTool({
     "Simulates updating a startup budget without persisting any actual changes.",
   approvalDescription:
     "Simulates a budget update request for testing the human approval flow. No real data is changed.",
+  policyFields: [
+    {
+      name: "companyName",
+      label: "Company name",
+      type: "string",
+      description: "The company whose budget would be updated.",
+    },
+    {
+      name: "amount",
+      label: "Budget amount",
+      type: "number",
+      description: "The budget amount that would be applied.",
+    },
+    {
+      name: "category",
+      label: "Budget category",
+      type: "string",
+      description: "The budget category that would be updated.",
+    },
+  ],
   parameters: z.object({
     companyName: z.string().describe("The company whose budget would be updated."),
     amount: z.number().describe("The budget amount that would be applied."),
@@ -140,4 +201,18 @@ export function listTools() {
 
 export function getToolDefinition(toolName: ToolName) {
   return toolRegistry[toolName];
+}
+
+export function listFunctionDefinitions() {
+  return (Object.keys(toolRegistry) as ToolName[]).map((toolName) => {
+    const definition = toolRegistry[toolName];
+
+    return {
+      name: definition.name,
+      access: definition.access,
+      description: definition.description,
+      approvalDescription: definition.approvalDescription,
+      policyFields: definition.policyFields,
+    };
+  });
 }

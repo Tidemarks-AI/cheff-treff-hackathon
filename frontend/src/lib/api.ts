@@ -18,6 +18,42 @@ export type PendingApproval = {
   callId: string
 }
 
+export type PolicyFieldType = "string" | "number" | "boolean"
+export type PolicyOperator = "eq" | "neq" | "lt" | "lte" | "gt" | "gte" | "contains"
+export type PolicyAction = "auto_allow" | "auto_deny"
+export type PolicyConditionGroup = "all" | "any"
+
+export type FunctionPolicyField = {
+  name: string
+  label: string
+  type: PolicyFieldType
+  description?: string
+}
+
+export type FunctionDefinition = {
+  name: string
+  access: "read_only" | "mutating"
+  description: string
+  approvalDescription: string
+  policyFields: FunctionPolicyField[]
+}
+
+export type FunctionPolicy = {
+  id: string
+  toolName: string
+  action: PolicyAction
+  conditionGroup: PolicyConditionGroup
+  conditions: Array<{
+    id: string
+    field: string
+    operator: PolicyOperator
+    value: string | number | boolean
+  }>
+  enabled: boolean
+  createdAt: string
+  updatedAt: string
+}
+
 export type AgentRunResponse =
   | {
       agentId: string
@@ -55,6 +91,61 @@ export async function runAgent(agentId: string, message: string) {
 
 export async function listPendingApprovals() {
   return apiFetch<{ approvals: PendingApproval[] }>("/api/approvals")
+}
+
+export async function listFunctions() {
+  return apiFetch<{ functions: FunctionDefinition[] }>("/api/functions")
+}
+
+export async function listPolicies() {
+  return apiFetch<{ policies: FunctionPolicy[] }>("/api/policies")
+}
+
+export async function createPolicy(input: {
+  toolName: string
+  action: PolicyAction
+  conditionGroup: PolicyConditionGroup
+  conditions: Array<{
+    field: string
+    operator: PolicyOperator
+    value: string
+  }>
+  enabled: boolean
+}) {
+  return apiFetch<{ policy: FunctionPolicy }>("/api/policies", {
+    method: "POST",
+    body: JSON.stringify(input),
+  })
+}
+
+export async function updatePolicy(
+  policyId: string,
+  input: {
+    toolName: string
+    action: PolicyAction
+    conditionGroup: PolicyConditionGroup
+    conditions: Array<{
+      field: string
+      operator: PolicyOperator
+      value: string
+    }>
+    enabled: boolean
+  }
+) {
+  return apiFetch<{ policy: FunctionPolicy }>(`/api/policies/${policyId}`, {
+    method: "PATCH",
+    body: JSON.stringify(input),
+  })
+}
+
+export async function deletePolicy(policyId: string) {
+  const res = await fetch(`${API_URL}/api/policies/${policyId}`, {
+    method: "DELETE",
+  })
+
+  if (!res.ok) {
+    throw new Error(`API error: ${res.status}`)
+  }
 }
 
 export async function acceptPendingApproval(approvalId: string) {
