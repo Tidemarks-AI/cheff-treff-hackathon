@@ -163,7 +163,7 @@ const simulateBudgetUpdate = defineTool({
     amount: z.number().describe("The budget amount that would be applied."),
     category: z.string().describe("The budget category that would be updated."),
   }),
-  execute: async (input) => {
+  execute: async (input: any) => {
     const { companyName, amount, category } = input as {
       companyName: string;
       amount: number;
@@ -215,7 +215,7 @@ const createFixedCost = defineTool({
     term_months: z.number().describe("Contract duration in months"),
     vendor: z.string().describe("Vendor name"),
   }),
-  execute: async (input) => {
+  execute: async (input: any) => {
     return {
       message: "Fixed cost creation requires approval via change request flow.",
       input,

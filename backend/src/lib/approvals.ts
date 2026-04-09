@@ -87,8 +87,8 @@ export async function createPendingApprovals<TContext>(
 ) {
   const runState = result.state.toString();
   const rows = result.interruptions
-    .map((interruption) => toInsertRow(agentId, runState, interruption))
-    .filter((row): row is Record<string, unknown> => row !== null);
+    .map((interruption: any) => toInsertRow(agentId, runState, interruption))
+    .filter((row: any): row is Record<string, unknown> => row !== null);
 
   if (rows.length === 0) {
     return [];
