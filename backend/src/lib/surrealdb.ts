@@ -1,8 +1,14 @@
 import { Surreal } from "surrealdb";
 
-const SURREAL_URL =
+const RAW_SURREAL_URL =
   process.env.SURREAL_URL ||
   "wss://hackathon-06en6u8l4hvs35nil13p3msu4o.aws-euw1.surreal.cloud";
+
+// Vercel serverless doesn't support long-lived WebSocket connections;
+// SurrealDB SDK also accepts HTTPS, so swap the protocol on Vercel.
+const SURREAL_URL = process.env.VERCEL
+  ? RAW_SURREAL_URL.replace(/^wss:\/\//, "https://").replace(/^ws:\/\//, "http://")
+  : RAW_SURREAL_URL;
 const SURREAL_USER = process.env.SURREAL_USER || "";
 const SURREAL_PASS = process.env.SURREAL_PASS || "";
 const SURREAL_NS = process.env.SURREAL_NS || "main";
