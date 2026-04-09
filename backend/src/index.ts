@@ -51,7 +51,7 @@ import {
   updateChangeRequestDiscord,
 } from "./lib/change-requests.js";
 import { addSSEClient, broadcastSSE } from "./lib/sse.js";
-import { createOfficeLeaseDraft, seedForecastBase } from "./lib/fixtures.js";
+import { seedForecastBase } from "./lib/fixtures.js";
 import {
   postChangeRequestToDiscord,
   markChangeRequestDiscordResolved,
@@ -357,7 +357,7 @@ app.post("/api/surreal/query", async (req, res) => {
       await db.close();
     }
   } catch (e) {
-    const status = (e as Error).message.includes("auth") ? 401 : 500;
+    const msg = (e as Error).message; const status = (msg === "Missing authorization header" || msg === "Invalid auth token") ? 401 : 500;
     res.status(status).json({ error: (e as Error).message });
   }
 });
@@ -409,7 +409,7 @@ app.get("/api/employees/:id/compensation", async (req, res) => {
       await db.close();
     }
   } catch (e) {
-    const status = (e as Error).message.includes("auth") ? 401 : 500;
+    const msg = (e as Error).message; const status = (msg === "Missing authorization header" || msg === "Invalid auth token") ? 401 : 500;
     res.status(status).json({ error: (e as Error).message });
   }
 });
@@ -427,7 +427,7 @@ app.post("/api/surreal/:table", async (req, res) => {
       await db.close();
     }
   } catch (e) {
-    const status = (e as Error).message.includes("auth") ? 401 : 500;
+    const msg = (e as Error).message; const status = (msg === "Missing authorization header" || msg === "Invalid auth token") ? 401 : 500;
     res.status(status).json({ error: (e as Error).message });
   }
 });
@@ -478,7 +478,7 @@ app.get("/api/changes", async (req, res) => {
       await db.close();
     }
   } catch (e) {
-    const status = (e as Error).message.includes("auth") ? 401 : 500;
+    const msg = (e as Error).message; const status = (msg === "Missing authorization header" || msg === "Invalid auth token") ? 401 : 500;
     res.status(status).json({ error: (e as Error).message });
   }
 });
@@ -488,28 +488,61 @@ app.get("/api/ontology/finance", async (req, res) => {
     const surrealDbName = await resolveCompanyDB(req);
     const db = await getCompanyDB(surrealDbName);
     try {
-      // Query finance subgraph from SurrealDB
-      const [costCenters] = await db.query("SELECT * FROM cost_center");
-      const [fixedExpenses] = await db.query("SELECT * FROM fixed_expense");
-      const [budgetLines] = await db.query("SELECT * FROM budget_line");
-      const [variances] = await db.query("SELECT * FROM variance");
-      const [bankAccounts] = await db.query("SELECT * FROM bank_account");
-      const [runwayCalcs] = await db.query("SELECT * FROM runway_calculation");
+      // Query finance data from SurrealDB
+      const [costCenters] = await db.query<[Array<Record<string, unknown>>]>("SELECT * FROM cost_center");
+      const [fixedExpenses] = await db.query<[Array<Record<string, unknown>>]>("SELECT * FROM fixed_expense");
+      const [budgetLines] = await db.query<[Array<Record<string, unknown>>]>("SELECT * FROM budget_line");
+      const [costs] = await db.query<[Array<Record<string, unknown>>]>("SELECT * FROM costs");
+      const [variances] = await db.query<[Array<Record<string, unknown>>]>("SELECT * FROM variance");
+      const [bankAccounts] = await db.query<[Array<Record<string, unknown>>]>("SELECT * FROM bank_account");
+      const [runwayCalcs] = await db.query<[Array<Record<string, unknown>>]>("SELECT * FROM runway_calculation");
+      const [forecasts] = await db.query<[Array<Record<string, unknown>>]>("SELECT * FROM financial_forecast");
+
+      const totalFixedMonthly = (fixedExpenses ?? []).reduce(
+        (sum, fe) => sum + Number(fe.amount ?? 0), 0
+      );
+      const flaggedVariances = (variances ?? []).filter(
+        (v) => v.status === "flagged"
+      ).length;
+      const bankBalance = (bankAccounts ?? [])[0]?.current_balance
+        ? Number((bankAccounts ?? [])[0].current_balance)
+        : null;
+      const runway = (runwayCalcs ?? [])[0];
+      const runwayMonths = runway ? Number(runway.months_remaining ?? 0) : null;
+
+      // Build graph with real summaries
+      const graph = {
+        nodes: [
+          { id: "cost_center", label: "Cost Centers", count: (costCenters ?? []).length },
+          { id: "budget_line", label: "Budget Lines", count: (budgetLines ?? []).length },
+          { id: "fixed_expense", label: "Fixed Expenses", count: (fixedExpenses ?? []).length, totalMonthly: totalFixedMonthly },
+          { id: "costs", label: "Costs (Actuals)", count: (costs ?? []).length },
+          { id: "variance", label: "Variances", count: (variances ?? []).length, flagged: flaggedVariances },
+          { id: "forecast", label: "Forecast", count: (forecasts ?? []).length },
+          { id: "runway", label: "Runway", months: runwayMonths },
+          { id: "bank", label: "Bank Account", balance: bankBalance },
+        ],
+        edges: [
+          { source: "cost_center", target: "fixed_expense", label: "owns" },
+          { source: "cost_center", target: "budget_line", label: "owns" },
+          { source: "cost_center", target: "costs", label: "incurs" },
+          { source: "budget_line", target: "variance", label: "planned" },
+          { source: "costs", target: "variance", label: "actual" },
+          { source: "variance", target: "forecast", label: "informs" },
+          { source: "forecast", target: "runway", label: "informs" },
+          { source: "runway", target: "bank", label: "uses" },
+        ],
+      };
 
       res.json({
-        costCenters,
-        fixedExpenses,
-        budgetLines,
-        variances,
-        bankAccounts,
-        runwayCalculations: runwayCalcs,
+        graph,
         forecastBase: seedForecastBase(),
       });
     } finally {
       await db.close();
     }
   } catch (e) {
-    const status = (e as Error).message.includes("auth") ? 401 : 500;
+    const msg = (e as Error).message; const status = (msg === "Missing authorization header" || msg === "Invalid auth token") ? 401 : 500;
     res.status(status).json({ error: (e as Error).message });
   }
 });
@@ -534,7 +567,7 @@ app.post("/api/changes/:id/approve", async (req, res) => {
       await db.close();
     }
   } catch (e) {
-    const status = (e as Error).message.includes("auth") ? 401 : 500;
+    const msg = (e as Error).message; const status = (msg === "Missing authorization header" || msg === "Invalid auth token") ? 401 : 500;
     res.status(status).json({ error: (e as Error).message });
   }
 });
@@ -558,59 +591,11 @@ app.post("/api/changes/:id/reject", async (req, res) => {
       await db.close();
     }
   } catch (e) {
-    const status = (e as Error).message.includes("auth") ? 401 : 500;
+    const msg = (e as Error).message; const status = (msg === "Missing authorization header" || msg === "Invalid auth token") ? 401 : 500;
     res.status(status).json({ error: (e as Error).message });
   }
 });
 
-app.post("/api/debug/seed", async (req, res) => {
-  try {
-    const surrealDbName = await resolveCompanyDB(req);
-    const db = await getCompanyDB(surrealDbName);
-    try {
-      const draft = createOfficeLeaseDraft();
-
-      // Evaluate policy
-      const policyDecision = getToolPolicyDecision(
-        "createFixedCost",
-        draft.proposal_values
-      );
-      if (policyDecision.policy) {
-        draft.policy_triggered = [policyDecision.policy.id];
-        draft.policy_satisfied = policyDecision.decision === "auto_allow";
-        if (policyDecision.decision !== "auto_allow") {
-          draft.policy_message =
-            draft.policy_message ??
-            `Policy '${policyDecision.policy.toolName}' requires approval.`;
-        }
-      }
-
-      const cr = await createChangeRequest(db, draft);
-      broadcastSSE("change:new", cr);
-
-      // Post to Discord (non-blocking)
-      postChangeRequestToDiscord(cr)
-        .then(async (discord) => {
-          if (discord) {
-            await updateChangeRequestDiscord(
-              db,
-              String(cr.id).replace("change_request:", ""),
-              discord.discordMessageId,
-              discord.discordChannelId
-            );
-          }
-        })
-        .catch((err) => console.warn("Discord post failed:", err));
-
-      res.status(201).json({ change: cr });
-    } finally {
-      await db.close();
-    }
-  } catch (e) {
-    const status = (e as Error).message.includes("auth") ? 401 : 500;
-    res.status(status).json({ error: (e as Error).message });
-  }
-});
 
 // ── Legacy routes ───────────────────────────────────────────
 

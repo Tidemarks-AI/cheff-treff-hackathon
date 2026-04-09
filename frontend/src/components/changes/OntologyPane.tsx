@@ -1,4 +1,4 @@
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import {
   ReactFlow,
   Background,
@@ -12,7 +12,12 @@ import {
 } from "@xyflow/react"
 import "@xyflow/react/dist/style.css"
 import ELK from "elkjs/lib/elk.bundled.js"
-import type { ChangeRequest } from "@/lib/changes-api"
+import {
+  fetchOntologyFinance,
+  type ChangeRequest,
+  type OntologyGraphNode,
+  type OntologyGraphEdge,
+} from "@/lib/changes-api"
 
 const elk = new ELK()
 const NODE_WIDTH = 150
@@ -42,22 +47,21 @@ async function getLayoutedElements(nodes: Node[], edges: Edge[]) {
 }
 
 // Two semantic groups: structure (steel) and financial (ice blue)
-const STEEL   = { border: "#b0b8c4", color: "#5a6370" } // structure: cost centers, budgets, expenses
-const ICE     = { border: "#a3b8d0", color: "#546d8a" } // financial: forecasts, runway, bank
+const STEEL = { border: "#b0b8c4", color: "#5a6370" }
+const ICE = { border: "#a3b8d0", color: "#546d8a" }
 
 const NODE_COLORS: Record<string, { border: string; color: string }> = {
-  cost_center:   STEEL,
-  budget_line:   STEEL,
+  cost_center: STEEL,
+  budget_line: STEEL,
   fixed_expense: STEEL,
-  costs:         STEEL,
-  variance:      ICE,
-  forecast:      ICE,
-  runway:        ICE,
-  bank:          ICE,
+  costs: STEEL,
+  variance: ICE,
+  forecast: ICE,
+  runway: ICE,
+  bank: ICE,
 }
 const DEFAULT_NODE = STEEL
 
-// IDs that a change request references (edges point to these)
 const REFERENCED_IDS = new Set(["cost_center", "fixed_expense"])
 
 function nodeStyle(id: string, isReferenced: boolean, hasChange: boolean) {
@@ -73,44 +77,44 @@ function nodeStyle(id: string, isReferenced: boolean, hasChange: boolean) {
     width: NODE_WIDTH,
     textAlign: "center" as const,
     color: palette.color,
+    cursor: "pointer",
     transition: "all 400ms ease",
     boxShadow: "none",
   }
 }
 
-function makeNodes(hasChange: boolean): Node[] {
-  return [
-    { id: "cost_center", data: { label: "Cost Center (G&A)" } },
-    { id: "budget_line", data: { label: "Budget Line" } },
-    { id: "fixed_expense", data: { label: "Fixed Expenses" } },
-    { id: "costs", data: { label: "Costs (Actuals)" } },
-    { id: "variance", data: { label: "Variance" } },
-    { id: "forecast", data: { label: "Financial Forecast" } },
-    { id: "runway", data: { label: "Runway Calculation" } },
-    { id: "bank", data: { label: "Bank Account" } },
-  ].map((n) => ({
-    ...n,
+const fmtCompact = (n: number) =>
+  n >= 1000 ? `${Math.round(n / 1000)}k` : String(n)
+
+function buildNodeLabel(gn: OntologyGraphNode): string {
+  const parts = [gn.label]
+  if (gn.count != null) parts[0] += ` (${gn.count})`
+  if (gn.totalMonthly != null) parts.push(`€${fmtCompact(gn.totalMonthly)}/mo`)
+  if (gn.flagged != null && gn.flagged > 0) parts.push(`${gn.flagged} flagged`)
+  if (gn.months != null) parts.push(`${gn.months.toFixed(1)}mo`)
+  if (gn.balance != null) parts.push(`€${fmtCompact(gn.balance)}`)
+  return parts.join("\n")
+}
+
+function buildFlowNodes(graphNodes: OntologyGraphNode[], hasChange: boolean): Node[] {
+  return graphNodes.map((gn) => ({
+    id: gn.id,
+    data: { label: buildNodeLabel(gn) },
     position: { x: 0, y: 0 },
     sourcePosition: Position.Bottom,
     targetPosition: Position.Top,
-    style: nodeStyle(n.id, REFERENCED_IDS.has(n.id), hasChange),
+    style: nodeStyle(gn.id, REFERENCED_IDS.has(gn.id), hasChange),
   }))
 }
 
-function makeEdges(hasChange: boolean): Edge[] {
-  return [
-    { id: "e-cc-bl", source: "cost_center", target: "budget_line", label: "owns" },
-    { id: "e-cc-costs", source: "cost_center", target: "costs", label: "incurs" },
-    { id: "e-bl-var", source: "budget_line", target: "variance", label: "planned" },
-    { id: "e-costs-var", source: "costs", target: "variance", label: "actual" },
-    { id: "e-var-fc", source: "variance", target: "forecast", label: "informs" },
-    { id: "e-fc-run", source: "forecast", target: "runway", label: "informs" },
-    { id: "e-run-bank", source: "runway", target: "bank", label: "uses" },
-  ].map((e) => {
-    // Highlight edges that connect to referenced nodes
-    const touchesRef = hasChange && (REFERENCED_IDS.has(e.source) || REFERENCED_IDS.has(e.target))
+function buildFlowEdges(graphEdges: OntologyGraphEdge[], hasChange: boolean): Edge[] {
+  return graphEdges.map((ge, i) => {
+    const touchesRef = hasChange && (REFERENCED_IDS.has(ge.source) || REFERENCED_IDS.has(ge.target))
     return {
-      ...e,
+      id: `e-${ge.source}-${ge.target}-${i}`,
+      source: ge.source,
+      target: ge.target,
+      label: ge.label,
       type: "default",
       style: { stroke: touchesRef ? "#8b95a5" : "#dde0e4", strokeWidth: 1.5, transition: "all 400ms ease" },
       labelStyle: { fill: touchesRef ? "#8b95a5" : "#b0b5be", fontSize: 10, transition: "all 400ms ease" },
@@ -121,6 +125,28 @@ function makeEdges(hasChange: boolean): Edge[] {
   })
 }
 
+// Fallback graph when API is unavailable
+const FALLBACK_NODES: OntologyGraphNode[] = [
+  { id: "cost_center", label: "Cost Centers" },
+  { id: "budget_line", label: "Budget Lines" },
+  { id: "fixed_expense", label: "Fixed Expenses" },
+  { id: "costs", label: "Costs (Actuals)" },
+  { id: "variance", label: "Variances" },
+  { id: "forecast", label: "Forecast" },
+  { id: "runway", label: "Runway" },
+  { id: "bank", label: "Bank Account" },
+]
+const FALLBACK_EDGES: OntologyGraphEdge[] = [
+  { source: "cost_center", target: "fixed_expense", label: "owns" },
+  { source: "cost_center", target: "budget_line", label: "owns" },
+  { source: "cost_center", target: "costs", label: "incurs" },
+  { source: "budget_line", target: "variance", label: "planned" },
+  { source: "costs", target: "variance", label: "actual" },
+  { source: "variance", target: "forecast", label: "informs" },
+  { source: "forecast", target: "runway", label: "informs" },
+  { source: "runway", target: "bank", label: "uses" },
+]
+
 interface Props {
   change: ChangeRequest | null
 }
@@ -129,17 +155,37 @@ function OntologyFlow({ change }: Props) {
   const isApproved = change?.status === "approved"
   const hasChange = change != null
 
+  const [graphNodes, setGraphNodes] = useState<OntologyGraphNode[]>(FALLBACK_NODES)
+  const [graphEdges, setGraphEdges] = useState<OntologyGraphEdge[]>(FALLBACK_EDGES)
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([])
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([])
 
+  // Fetch graph data from API
   useEffect(() => {
-    const allNodes = makeNodes(hasChange)
-    const allEdges = makeEdges(hasChange)
+    fetchOntologyFinance()
+      .then((data) => {
+        setGraphNodes(data.graph.nodes)
+        setGraphEdges(data.graph.edges)
+      })
+      .catch(() => {
+        // Keep fallback
+      })
+  }, [])
 
-    if (hasChange) {
+  // Build layout whenever graph data or change state changes
+  useEffect(() => {
+    const allNodes = buildFlowNodes(graphNodes, hasChange)
+    const allEdges = buildFlowEdges(graphEdges, hasChange)
+
+    if (hasChange && change) {
+      const values = change.proposal_values as Record<string, unknown>
+      const vendor = (values.vendor as string) ?? change.proposal_target_type
+      const amount = values.monthly_amount ? `€${fmtCompact(Number(values.monthly_amount))}/mo` : ""
+      const label = [vendor, amount].filter(Boolean).join("\n")
+
       allNodes.push({
         id: "proposed",
-        data: { label: "Office Lease\n€12k/mo" },
+        data: { label },
         position: { x: 0, y: 0 },
         sourcePosition: Position.Bottom,
         targetPosition: Position.Top,
@@ -170,17 +216,37 @@ function OntologyFlow({ change }: Props) {
       const labelBgPadding: [number, number] = [0, 0]
       const marker = { type: MarkerType.ArrowClosed as const, width: 14, height: 14, color: "#6b7280" }
 
-      allEdges.push(
-        { id: "e-proposed-fe", source: "proposed", target: "fixed_expense", label: "instance of", type: "default", style: edgeStyle, labelStyle, labelBgStyle, labelBgPadding, markerEnd: marker },
-        { id: "e-proposed-cc", source: "proposed", target: "cost_center", label: "belongs to", type: "default", style: edgeStyle, labelStyle, labelBgStyle, labelBgPadding, markerEnd: marker },
-      )
+      // Connect proposed node to the targets from the change request edges
+      const proposalEdges = change.proposal_edges ?? []
+      if (proposalEdges.length > 0) {
+        for (const pe of proposalEdges) {
+          allEdges.push({
+            id: `e-proposed-${pe.to}`,
+            source: "proposed",
+            target: pe.to,
+            label: pe.label,
+            type: "default",
+            style: edgeStyle,
+            labelStyle,
+            labelBgStyle,
+            labelBgPadding,
+            markerEnd: marker,
+          })
+        }
+      } else {
+        // Default: connect to fixed_expense and cost_center
+        allEdges.push(
+          { id: "e-proposed-fe", source: "proposed", target: "fixed_expense", label: "instance of", type: "default", style: edgeStyle, labelStyle, labelBgStyle, labelBgPadding, markerEnd: marker },
+          { id: "e-proposed-cc", source: "proposed", target: "cost_center", label: "belongs to", type: "default", style: edgeStyle, labelStyle, labelBgStyle, labelBgPadding, markerEnd: marker },
+        )
+      }
     }
 
     getLayoutedElements(allNodes, allEdges).then(({ nodes: ln, edges: le }) => {
       setNodes(ln)
       setEdges(le)
     })
-  }, [hasChange, isApproved])
+  }, [graphNodes, graphEdges, hasChange, isApproved, change])
 
   return (
     <ReactFlow
@@ -189,7 +255,7 @@ function OntologyFlow({ change }: Props) {
       onNodesChange={onNodesChange}
       onEdgesChange={onEdgesChange}
       fitView
-      fitViewOptions={{ padding: 0.25 }}
+      fitViewOptions={{ padding: 0.15 }}
       proOptions={{ hideAttribution: true }}
       nodesDraggable={false}
       nodesConnectable={false}

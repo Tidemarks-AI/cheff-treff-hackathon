@@ -39,9 +39,9 @@ const authenticatedLayout = createRoute({
     const {
       data: { session },
     } = await supabase.auth.getSession()
-    // if (!session) {
-    //   throw redirect({ to: "/login" })
-    // }
+    if (!session) {
+      throw redirect({ to: "/login" })
+    }
   },
 })
 

@@ -100,12 +100,26 @@ export async function processEmail(
   }
 }
 
+async function pdfToImages(pdfBuffer: Buffer): Promise<string[]> {
+  const { pdf } = await import("pdf-to-img");
+  const pages: string[] = [];
+  for await (const page of await pdf(pdfBuffer, { scale: 2 })) {
+    pages.push(Buffer.from(page).toString("base64"));
+  }
+  return pages;
+}
+
 async function extractFromPDF(
   pdfBuffer: Buffer,
   metadata: EmailMetadata
 ): Promise<ExtractionResult> {
   const openai = getOpenAI();
-  const base64PDF = pdfBuffer.toString("base64");
+  const pageImages = await pdfToImages(pdfBuffer);
+
+  const imageContent = pageImages.map((b64) => ({
+    type: "image_url" as const,
+    image_url: { url: `data:image/png;base64,${b64}` },
+  }));
 
   const response = await openai.chat.completions.create({
     model: "gpt-4o",
@@ -113,7 +127,7 @@ async function extractFromPDF(
     messages: [
       {
         role: "system",
-        content: `You are a document extraction agent. Extract structured financial data from the attached PDF.
+        content: `You are a document extraction agent. Extract structured financial data from the attached document pages.
 Return JSON with these fields:
 - vendor (string): the company or person providing the service
 - monthly_amount (number): the monthly cost in EUR
@@ -134,12 +148,7 @@ Return JSON with these fields:
             type: "text",
             text: `Email from: ${metadata.from}\nSubject: ${metadata.subject}\nAttachment: ${metadata.attachmentFilename}\n\nPlease extract the financial terms from this document.`,
           },
-          {
-            type: "image_url",
-            image_url: {
-              url: `data:application/pdf;base64,${base64PDF}`,
-            },
-          },
+          ...imageContent,
         ],
       },
     ],

@@ -40,8 +40,20 @@ export type ChangeRequest = {
 }
 
 async function getAuthHeaders(): Promise<Record<string, string>> {
-  const session = await supabase.auth.getSession()
-  const token = session.data.session?.access_token
+  const { data } = await supabase.auth.getSession()
+  let token = data.session?.access_token
+
+  // Fallback: read token from localStorage if session isn't hydrated yet
+  if (!token) {
+    const storageKey = Object.keys(localStorage).find(k => k.startsWith("sb-") && k.endsWith("-auth-token"))
+    if (storageKey) {
+      try {
+        const stored = JSON.parse(localStorage.getItem(storageKey) ?? "")
+        token = stored?.access_token
+      } catch { /* ignore */ }
+    }
+  }
+
   return {
     "Content-Type": "application/json",
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -78,24 +90,27 @@ export async function rejectChangeRequest(id: string): Promise<ChangeRequest> {
   return json.change
 }
 
-export async function seedFixture(): Promise<ChangeRequest> {
-  const headers = await getAuthHeaders()
-  const res = await fetch(`${API_URL}/api/debug/seed`, {
-    method: "POST",
-    headers,
-  })
-  if (!res.ok) throw new Error(`API error: ${res.status}`)
-  const json = await res.json()
-  return json.change
+export type OntologyGraphNode = {
+  id: string
+  label: string
+  count?: number
+  totalMonthly?: number
+  flagged?: number
+  months?: number | null
+  balance?: number | null
+}
+
+export type OntologyGraphEdge = {
+  source: string
+  target: string
+  label: string
 }
 
 export type OntologyFinanceData = {
-  costCenters: unknown[]
-  fixedExpenses: unknown[]
-  budgetLines: unknown[]
-  variances: unknown[]
-  bankAccounts: unknown[]
-  runwayCalculations: unknown[]
+  graph: {
+    nodes: OntologyGraphNode[]
+    edges: OntologyGraphEdge[]
+  }
   forecastBase: ForecastSeries
 }
 

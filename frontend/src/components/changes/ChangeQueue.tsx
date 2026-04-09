@@ -1,4 +1,4 @@
-import { Mail, Clock } from "lucide-react"
+import { Mail } from "lucide-react"
 import { Badge, ScrollArea } from "@startupos/ui"
 import type { ChangeRequest } from "@/lib/changes-api"
 
@@ -9,14 +9,6 @@ function formatProposalTitle(cr: ChangeRequest): string {
   return `${cr.proposal_target_type}`
 }
 
-function formatTimeAgo(dateStr: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime()
-  const seconds = Math.floor(diff / 1000)
-  if (seconds < 60) return `${seconds}s`
-  const minutes = Math.floor(seconds / 60)
-  if (minutes < 60) return `${minutes}m`
-  return `${Math.floor(minutes / 60)}h`
-}
 
 interface ChangeQueueProps {
   changes: ChangeRequest[]
@@ -42,14 +34,14 @@ export function ChangeQueue({ changes, selectedId, onSelect }: ChangeQueueProps)
             <button
               key={cr.id}
               onClick={() => onSelect(cr.id)}
-              className={`flex flex-col gap-1 rounded-xl px-2.5 py-2 text-left transition-all ${
+              className={`flex flex-col gap-1 rounded-xl px-2.5 py-2 text-left transition-all cursor-pointer ${
                 isSelected
                   ? "bg-background/80 shadow-sm ring-1 ring-border/60"
                   : "hover:bg-background/40"
               }`}
             >
-              <div className="flex items-center justify-between gap-1.5">
-                <span className="text-[12px] font-medium text-foreground truncate">
+              <div className="flex items-center gap-1.5 min-w-0">
+                <span className="text-[12px] font-medium text-foreground truncate min-w-0">
                   {formatProposalTitle(cr)}
                 </span>
                 <Badge
@@ -63,13 +55,9 @@ export function ChangeQueue({ changes, selectedId, onSelect }: ChangeQueueProps)
                   {cr.status === "pending" ? "New" : cr.status === "approved" ? "✓" : "✕"}
                 </Badge>
               </div>
-              <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
-                <Mail className="h-2.5 w-2.5" />
-                <span className="truncate">{cr.source_from}</span>
-                <span className="ml-auto shrink-0 flex items-center gap-0.5">
-                  <Clock className="h-2.5 w-2.5" />
-                  {formatTimeAgo(cr.received_at)}
-                </span>
+              <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground min-w-0">
+                <Mail className="h-2.5 w-2.5 shrink-0" />
+                <span className="truncate min-w-0">{cr.source_from}</span>
               </div>
             </button>
           )
