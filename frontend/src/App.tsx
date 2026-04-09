@@ -1,22 +1,39 @@
-import { Link, Outlet } from "@tanstack/react-router"
+import { Outlet } from "@tanstack/react-router"
+
+import { AppSidebar } from "@/components/app-sidebar"
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbList,
+  BreadcrumbPage,
+} from "@/components/ui/breadcrumb"
+import { Separator } from "@/components/ui/separator"
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar"
 
 export default function App() {
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <header className="border-b">
-        <nav className="container mx-auto flex items-center gap-6 p-4">
-          <h1 className="text-xl font-bold">Hackathon Starter</h1>
-          <Link to="/" className="hover:underline">
-            Home
-          </Link>
-          <Link to="/about" className="hover:underline">
-            About
-          </Link>
-        </nav>
-      </header>
-      <main className="container mx-auto p-4">
-        <Outlet />
-      </main>
-    </div>
+    <SidebarProvider>
+      <AppSidebar />
+      <SidebarInset>
+        <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
+          <SidebarTrigger className="-ml-1" />
+          <Separator orientation="vertical" className="mr-2 h-4!" />
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbPage>Dashboard</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+        </header>
+        <div className="flex-1 p-4 md:p-6">
+          <Outlet />
+        </div>
+      </SidebarInset>
+    </SidebarProvider>
   )
 }
