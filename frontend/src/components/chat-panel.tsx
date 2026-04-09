@@ -4,6 +4,7 @@ import { cn, Button, Textarea, Sheet, SheetContent, SheetHeader, SheetTitle } fr
 import { streamAgent } from "@/lib/api"
 import { useVoiceInput } from "@/hooks/use-voice-input"
 import { ImpactPreview, type ImpactPreviewData } from "@/components/chat/ImpactPreview"
+import Markdown from "react-markdown"
 
 type Message = {
   id: string
@@ -49,7 +50,47 @@ function parseMessageContent(content: string): Array<{ type: "text"; text: strin
   return parts.length > 0 ? parts : [{ type: "text", text: content }]
 }
 
+function isStreamingImpactBlock(content: string): boolean {
+  // True if there's an incomplete ```impact_preview block (opened but not closed)
+  const openIdx = content.lastIndexOf("```impact_preview")
+  if (openIdx === -1) return false
+  const afterOpen = content.slice(openIdx + "```impact_preview".length)
+  return !afterOpen.includes("```")
+}
+
+function MarkdownText({ text }: { text: string }) {
+  return (
+    <Markdown
+      components={{
+        p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+        strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
+        ul: ({ children }) => <ul className="list-disc pl-4 mb-2 last:mb-0 space-y-0.5">{children}</ul>,
+        ol: ({ children }) => <ol className="list-decimal pl-4 mb-2 last:mb-0 space-y-0.5">{children}</ol>,
+        li: ({ children }) => <li>{children}</li>,
+        h3: ({ children }) => <h3 className="font-semibold mt-3 mb-1">{children}</h3>,
+        h4: ({ children }) => <h4 className="font-semibold mt-2 mb-1">{children}</h4>,
+      }}
+    >
+      {text}
+    </Markdown>
+  )
+}
+
 function MessageContent({ content }: { content: string }) {
+  // While the impact_preview JSON is still streaming, show a loading spinner
+  if (isStreamingImpactBlock(content)) {
+    const beforeBlock = content.slice(0, content.lastIndexOf("```impact_preview"))
+    return (
+      <>
+        {beforeBlock.trim() && <MarkdownText text={beforeBlock} />}
+        <div className="flex items-center gap-2 py-2 text-muted-foreground">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          <span className="text-xs">Analyzing financial impact...</span>
+        </div>
+      </>
+    )
+  }
+
   const parts = parseMessageContent(content)
   return (
     <>
@@ -57,7 +98,7 @@ function MessageContent({ content }: { content: string }) {
         part.type === "impact_preview" ? (
           <ImpactPreview key={i} data={part.data} />
         ) : (
-          <span key={i} className="whitespace-pre-wrap">{part.text}</span>
+          <MarkdownText key={i} text={part.text} />
         )
       )}
     </>
@@ -209,7 +250,7 @@ export function ChatPanel({
         <SheetHeader className="border-b px-4 py-3">
           <SheetTitle className="flex items-center gap-2">
             <Bot className="h-4 w-4" />
-            Startup OS Assistant
+            SpaceStart Assistant
           </SheetTitle>
         </SheetHeader>
       )}

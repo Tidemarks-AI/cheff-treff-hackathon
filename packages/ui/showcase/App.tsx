@@ -863,7 +863,7 @@ export function App() {
         <header className="glass-subtle sticky top-0 z-50 border-b border-border px-8 py-4">
           <div className="mx-auto flex max-w-6xl items-center justify-between">
             <div className="flex items-center gap-8">
-              <h1 className="text-lg tracking-[0.2em] uppercase font-light">StartupOS UI</h1>
+              <h1 className="text-lg tracking-[0.25em] uppercase font-light" style={{ fontFamily: '-apple-system, "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif' }}>SPACESTART UI</h1>
               <nav className="flex gap-1">
                 {navItems.map(item => (
                   <button

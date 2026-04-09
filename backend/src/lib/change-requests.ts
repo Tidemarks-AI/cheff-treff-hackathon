@@ -54,8 +54,8 @@ export async function getChangeRequest(
   id: string
 ): Promise<ChangeRequest | undefined> {
   const [result] = await db.query<[ChangeRequest[]]>(
-    "SELECT * FROM type::thing($table, $id)",
-    { table: "change_request", id }
+    "SELECT * FROM type::record($id)",
+    { id }
   );
   return result?.[0];
 }
@@ -99,11 +99,11 @@ export async function approveChangeRequest(
   resolvedBy: string = "ui"
 ): Promise<ChangeRequest | undefined> {
   const [result] = await db.query<[ChangeRequest[]]>(
-    `UPDATE type::thing($table, $id) SET
+    `UPDATE type::record($id) SET
       status = "approved",
       resolved_by = $resolved_by,
       resolved_at = time::now()`,
-    { table: "change_request", id, resolved_by: resolvedBy }
+    { id, resolved_by: resolvedBy }
   );
   return result?.[0];
 }
@@ -114,11 +114,11 @@ export async function rejectChangeRequest(
   resolvedBy: string = "ui"
 ): Promise<ChangeRequest | undefined> {
   const [result] = await db.query<[ChangeRequest[]]>(
-    `UPDATE type::thing($table, $id) SET
+    `UPDATE type::record($id) SET
       status = "rejected",
       resolved_by = $resolved_by,
       resolved_at = time::now()`,
-    { table: "change_request", id, resolved_by: resolvedBy }
+    { id, resolved_by: resolvedBy }
   );
   return result?.[0];
 }
@@ -130,10 +130,10 @@ export async function updateChangeRequestDiscord(
   discordChannelId: string
 ): Promise<void> {
   await db.query(
-    `UPDATE type::thing($table, $id) SET
+    `UPDATE type::record($id) SET
       discord_message_id = $discord_message_id,
       discord_channel_id = $discord_channel_id`,
-    { table: "change_request", id, discord_message_id: discordMessageId, discord_channel_id: discordChannelId }
+    { id, discord_message_id: discordMessageId, discord_channel_id: discordChannelId }
   );
 }
 

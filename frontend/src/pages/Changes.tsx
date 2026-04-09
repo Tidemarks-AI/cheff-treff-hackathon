@@ -15,6 +15,7 @@ export default function Changes() {
   const [changes, setChanges] = useState<ChangeRequest[]>([])
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [readIds, setReadIds] = useState<Set<string>>(new Set())
 
   const activeChange = changes.find((c) => c.id === selectedId) ?? null
 
@@ -22,8 +23,14 @@ export default function Changes() {
   useEffect(() => {
     if (!selectedId && changes.length > 0) {
       setSelectedId(changes[0].id)
+      setReadIds((prev) => new Set(prev).add(changes[0].id))
     }
   }, [changes, selectedId])
+
+  const handleSelect = useCallback((id: string) => {
+    setSelectedId(id)
+    setReadIds((prev) => new Set(prev).add(id))
+  }, [])
 
   useEffect(() => {
     listChangeRequests()
@@ -103,7 +110,7 @@ export default function Changes() {
         <div className="px-3 pt-4 pb-2">
           <h3 className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Inbox</h3>
         </div>
-        <ChangeQueue changes={changes} selectedId={selectedId} onSelect={setSelectedId} />
+        <ChangeQueue changes={changes} selectedId={selectedId} onSelect={handleSelect} readIds={readIds} />
       </div>
 
       {/* Floating detail panel — 50% of viewport width */}

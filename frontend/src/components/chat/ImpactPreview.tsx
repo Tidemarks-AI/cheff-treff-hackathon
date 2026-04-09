@@ -132,7 +132,7 @@ export function ImpactPreview({ data }: { data: ImpactPreviewData }) {
       </div>
 
       {/* Ontology graph */}
-      <div className="border-b border-border" style={{ height: 280 }}>
+      <div className="border-b border-border" style={{ height: 340 }}>
         <OntologyPane change={syntheticChange} />
       </div>
 

@@ -1,6 +1,5 @@
 import { useState } from "react"
 import { useNavigate } from "@tanstack/react-router"
-import { Rocket } from "lucide-react"
 import { toast } from "sonner"
 import { useAuth } from "@/contexts/auth-context"
 import {
@@ -64,10 +63,8 @@ export default function Login() {
     <div className="flex min-h-svh items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-2 flex size-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <Rocket className="size-5" />
-          </div>
-          <CardTitle className="text-xl">Startup OS</CardTitle>
+          <img src="/logo.svg" alt="SpaceStart" className="mx-auto mb-2 h-8 w-auto" />
+          <CardTitle className="text-xl font-light tracking-[0.25em] uppercase" style={{ fontFamily: '-apple-system, "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif' }}>SPACESTART</CardTitle>
           <CardDescription>
             Sign in to your account to continue
           </CardDescription>

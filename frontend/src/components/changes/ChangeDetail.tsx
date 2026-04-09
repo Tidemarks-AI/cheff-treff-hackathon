@@ -93,9 +93,9 @@ export function ChangeDetail({ change, onApprove, onReject, isLoading }: ChangeD
       {/* Policy + actions */}
       <div className="px-6 py-3 border-t border-border shrink-0">
         {!change.policy_satisfied && (
-          <div className="flex items-start gap-2 mb-3 rounded-lg bg-amber-50/80 px-3 py-2">
-            <AlertTriangle className="h-3.5 w-3.5 text-amber-500 mt-0.5 shrink-0" />
-            <p className="text-xs text-amber-700 leading-relaxed">
+          <div className="flex items-start gap-2 mb-3 rounded-lg px-3 py-2" style={{ backgroundColor: "rgba(217, 119, 87, 0.1)" }}>
+            <AlertTriangle className="h-3.5 w-3.5 mt-0.5 shrink-0" style={{ color: "#D97757" }} />
+            <p className="text-xs leading-relaxed" style={{ color: "#B5603D" }}>
               {change.policy_message}
             </p>
           </div>
@@ -105,9 +105,10 @@ export function ChangeDetail({ change, onApprove, onReject, isLoading }: ChangeD
           <div className="flex gap-2">
             <Button
               size="sm"
+              variant="outline"
               onClick={onApprove}
               disabled={isLoading}
-              className="flex-1 rounded-lg h-9 text-xs font-medium"
+              className="w-1/2 rounded-lg h-9 text-xs font-medium text-green-900/60 border-green-900/20 hover:bg-green-50/50"
             >
               {isLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle className="h-3.5 w-3.5 mr-1.5" />}
               Apply Change
@@ -117,7 +118,7 @@ export function ChangeDetail({ change, onApprove, onReject, isLoading }: ChangeD
               variant="outline"
               onClick={onReject}
               disabled={isLoading}
-              className="rounded-lg h-9 px-4 text-xs border-border"
+              className="w-1/2 rounded-lg h-9 text-xs font-medium text-red-900/60 border-red-900/20 hover:bg-red-50/50"
             >
               <XCircle className="h-3.5 w-3.5 mr-1.5" />
               Reject
@@ -131,9 +132,9 @@ export function ChangeDetail({ change, onApprove, onReject, isLoading }: ChangeD
           </div>
         )}
         {isRejected && (
-          <div className="flex items-center justify-center gap-2 rounded-lg bg-red-50/80 py-2.5">
-            <XCircle className="h-4 w-4 text-red-500" />
-            <span className="text-sm font-medium text-red-600">Rejected</span>
+          <div className="flex items-center justify-center gap-2 rounded-lg border border-red-900/20 py-2.5">
+            <XCircle className="h-4 w-4 text-red-900/60" />
+            <span className="text-sm font-medium text-red-900/60">Rejected</span>
           </div>
         )}
       </div>
