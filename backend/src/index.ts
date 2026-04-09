@@ -1,6 +1,7 @@
 import { pipeline } from "node:stream/promises";
 import express from "express";
 import cors from "cors";
+import multer from "multer";
 import { RunState, run, type RunResult } from "@openai/agents";
 import { getSupabase } from "./lib/supabase.js";
 import { getOpenAI } from "./lib/openai.js";
@@ -224,6 +225,8 @@ async function resolvePendingApproval(
   return createRunResponse(approval.agentId, result);
 }
 
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 25 * 1024 * 1024 } });
+
 app.use(cors({ origin: process.env.CORS_ORIGIN || "http://localhost:5173" }));
 app.use(express.json());
 
@@ -240,6 +243,30 @@ app.get("/api/test-db", async (_req, res) => {
       return;
     }
     res.json({ data });
+  } catch (e) {
+    res.status(500).json({ error: (e as Error).message });
+  }
+});
+
+app.post("/api/transcribe", upload.single("file"), async (req, res) => {
+  try {
+    const openai = getOpenAI();
+    const file = req.file;
+    if (!file) {
+      res.status(400).json({ error: "No audio file provided" });
+      return;
+    }
+
+    const audioFile = new File([file.buffer], file.originalname || "recording.wav", {
+      type: file.mimetype || "audio/wav",
+    });
+
+    const transcription = await openai.audio.transcriptions.create({
+      file: audioFile,
+      model: "whisper-1",
+    });
+
+    res.json({ text: transcription.text });
   } catch (e) {
     res.status(500).json({ error: (e as Error).message });
   }

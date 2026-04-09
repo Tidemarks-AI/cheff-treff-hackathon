@@ -1,6 +1,9 @@
+import { useState, useCallback } from "react"
 import { Outlet } from "@tanstack/react-router"
 
 import { AppSidebar } from "@/components/app-sidebar"
+import { VoiceCommandBar } from "@/components/voice-command-bar"
+import { ChatPanel } from "@/components/chat-panel"
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -15,6 +18,18 @@ import {
 } from "@/components/ui/sidebar"
 
 export default function App() {
+  const [chatOpen, setChatOpen] = useState(false)
+  const [pendingMessage, setPendingMessage] = useState<string | undefined>()
+
+  const handleVoiceTranscription = useCallback((text: string) => {
+    setPendingMessage(text)
+    setChatOpen(true)
+  }, [])
+
+  const handleInitialMessageSent = useCallback(() => {
+    setPendingMessage(undefined)
+  }, [])
+
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -29,11 +44,25 @@ export default function App() {
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
+
+          <div className="ml-auto">
+            <VoiceCommandBar
+              onTranscription={handleVoiceTranscription}
+              onError={(err) => console.error("Voice error:", err)}
+            />
+          </div>
         </header>
         <div className="flex-1 p-4 md:p-6">
           <Outlet />
         </div>
       </SidebarInset>
+
+      <ChatPanel
+        open={chatOpen}
+        onOpenChange={setChatOpen}
+        initialMessage={pendingMessage}
+        onInitialMessageSent={handleInitialMessageSent}
+      />
     </SidebarProvider>
   )
 }
