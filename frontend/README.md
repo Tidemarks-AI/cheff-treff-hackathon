@@ -1,6 +1,8 @@
 # React + TypeScript + Vite + shadcn/ui
 
-This is a template for a new Vite project with React, TypeScript, and shadcn/ui.
+## Welcome
+
+Welcome to the frontend! This project is built with React, TypeScript, Vite, and shadcn/ui — a modern stack for building fast, accessible, and beautifully styled web applications.
 
 ## Adding components
 
