@@ -2,6 +2,7 @@ import { useState, useCallback } from "react"
 import { Link, Outlet } from "@tanstack/react-router"
 import { Settings } from "lucide-react"
 
+import { LightBeams } from "@/components/light-beams"
 import { ChatPanel } from "@/components/chat-panel"
 
 export default function App() {
@@ -31,8 +32,15 @@ export default function App() {
           </Link>
         </div>
       </header>
-      <div className="flex-1">
-        <Outlet />
+      <div className="relative flex-1">
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute inset-0 bg-gradient-to-b from-muted via-background to-background" />
+          <LightBeams className="absolute inset-0" />
+          <div className="absolute inset-0 bg-gradient-to-b from-background/20 via-transparent to-background/80" />
+        </div>
+        <div className="relative">
+          <Outlet />
+        </div>
       </div>
 
       <ChatPanel
