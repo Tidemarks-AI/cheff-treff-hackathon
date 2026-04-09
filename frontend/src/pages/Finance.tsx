@@ -9,7 +9,7 @@ import {
   Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
   Badge, Button, Input, Label,
   Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
+  Dialog, DialogContent, DialogHeader, DialogTitle,
 } from "@startupos/ui"
 
 const API_URL = import.meta.env.VITE_API_URL || ""

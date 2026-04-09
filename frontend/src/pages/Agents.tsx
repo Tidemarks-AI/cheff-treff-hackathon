@@ -5,7 +5,7 @@ import {
   Button, Badge, Card, CardContent, CardDescription, CardHeader, CardTitle,
   Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Textarea,
   Tabs, TabsList, TabsTrigger, TabsContent,
-  EmptyState, ErrorBanner, ApprovalCard, StatusBadge,
+  EmptyState, ErrorBanner, StatusBadge,
   GlassCard, GlassCardHeader, GlassCardContent, Separator, Label,
 } from "@startupos/ui"
 import {
@@ -762,7 +762,7 @@ export default function Agents() {
               <div className="grid gap-4 lg:grid-cols-[240px_1fr]">
                 <div className="space-y-2">
                   <Label>Agent</Label>
-                  <Select value={selectedAgentId || null} onValueChange={handleAgentChange}>
+                  <Select value={selectedAgentId || undefined} onValueChange={handleAgentChange}>
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select an agent" />
                     </SelectTrigger>

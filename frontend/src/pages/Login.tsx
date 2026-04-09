@@ -73,13 +73,13 @@ export default function Login() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue={0}>
+          <Tabs defaultValue="0">
             <TabsList className="mb-4 w-full">
-              <TabsTrigger value={0}>Sign In</TabsTrigger>
-              <TabsTrigger value={1}>Sign Up</TabsTrigger>
+              <TabsTrigger value="0">Sign In</TabsTrigger>
+              <TabsTrigger value="1">Sign Up</TabsTrigger>
             </TabsList>
 
-            <TabsContent value={0}>
+            <TabsContent value="0">
               <form onSubmit={handleSignIn} className="grid gap-4">
                 <div className="grid gap-2">
                   <Label htmlFor="signin-email">Email</Label>
@@ -109,7 +109,7 @@ export default function Login() {
               </form>
             </TabsContent>
 
-            <TabsContent value={1}>
+            <TabsContent value="1">
               <form onSubmit={handleSignUp} className="grid gap-4">
                 <div className="grid gap-2">
                   <Label htmlFor="signup-email">Email</Label>

@@ -81,7 +81,7 @@ export interface KanbanCardProps {
 function KanbanCard({
   className,
   cardId,
-  columnId,
+  columnId: _columnId,
   children,
 }: KanbanCardProps) {
   return (

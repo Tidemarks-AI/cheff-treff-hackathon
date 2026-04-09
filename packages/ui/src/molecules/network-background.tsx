@@ -107,7 +107,7 @@ export function NetworkBackground({
       })
 
       // Update circle positions
-      nodes.forEach((node, i) => {
+      nodes.forEach((_node, i) => {
         const el = circleRefs.current[i]
         if (!el) return
         el.setAttribute("cx", String(positions[i].x))
