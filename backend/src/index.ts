@@ -7,7 +7,11 @@ import { getSupabase } from "./lib/supabase.js";
 import { getOpenAI } from "./lib/openai.js";
 import { Table } from "surrealdb";
 import { getCompanyDB } from "./lib/surrealdb.js";
-import { isExternalTable, hydrateTable, getEmployeeCompensation } from "./lib/hydration.js";
+import {
+  isExternalTable,
+  hydrateTable,
+  getEmployeeCompensation,
+} from "./lib/hydration.js";
 import { getAgent, getDefaultAgentId, listAgents } from "./lib/agents.js";
 import {
   getToolDefinition,
@@ -98,14 +102,17 @@ function normalizePolicyValue(value: unknown, fieldType: PolicyFieldType) {
 
 function validatePolicyDraft(
   body: Record<string, unknown>,
-  currentToolName?: string
+  currentToolName?: string,
 ): FunctionPolicyDraft {
   const toolName = String(body.toolName ?? currentToolName ?? "");
   const action = (body.action as PolicyAction | undefined) ?? "auto_allow";
-  const conditionGroup = (body.conditionGroup as PolicyConditionGroup | undefined) ?? "all";
+  const conditionGroup =
+    (body.conditionGroup as PolicyConditionGroup | undefined) ?? "all";
   const enabled = body.enabled === undefined ? true : Boolean(body.enabled);
 
-  const toolDefinition = getToolDefinition(toolName as keyof typeof import("../tools.js").toolRegistry);
+  const toolDefinition = getToolDefinition(
+    toolName as keyof typeof import("../tools.js").toolRegistry,
+  );
 
   if (!toolDefinition) {
     throw new Error(`Unknown function '${toolName}'`);
@@ -135,15 +142,22 @@ function validatePolicyDraft(
     }
 
     const field = String((condition as Record<string, unknown>).field ?? "");
-    const operator = (condition as Record<string, unknown>).operator as PolicyOperator;
-    const policyField = toolDefinition.policyFields.find((entry) => entry.name === field);
+    const operator = (condition as Record<string, unknown>)
+      .operator as PolicyOperator;
+    const policyField = toolDefinition.policyFields.find(
+      (entry) => entry.name === field,
+    );
 
     if (!policyField) {
-      throw new Error(`Unknown policy field '${field}' for function '${toolName}'`);
+      throw new Error(
+        `Unknown policy field '${field}' for function '${toolName}'`,
+      );
     }
 
     if (!policyOperatorsByType[policyField.type].includes(operator)) {
-      throw new Error(`Operator '${operator}' is not valid for field '${field}'`);
+      throw new Error(
+        `Operator '${operator}' is not valid for field '${field}'`,
+      );
     }
 
     return {
@@ -151,7 +165,7 @@ function validatePolicyDraft(
       operator,
       value: normalizePolicyValue(
         (condition as Record<string, unknown>).value,
-        policyField.type
+        policyField.type,
       ),
     } satisfies FunctionPolicyDraftCondition;
   });
@@ -171,7 +185,7 @@ function formatReply(output: unknown) {
 
 async function createRunResponse<TContext>(
   agentId: string,
-  result: RunResult<TContext, any>
+  result: RunResult<TContext, any>,
 ) {
   if (result.interruptions.length > 0) {
     const approvals = await createPendingApprovals(agentId, result);
@@ -181,11 +195,14 @@ async function createRunResponse<TContext>(
         const discordMessage = await postApprovalToDiscord(approval);
 
         if (discordMessage) {
-          return (await updatePendingApproval(approval.id, discordMessage)) ?? approval;
+          return (
+            (await updatePendingApproval(approval.id, discordMessage)) ??
+            approval
+          );
         }
 
         return approval;
-      })
+      }),
     );
 
     return {
@@ -205,7 +222,7 @@ async function createRunResponse<TContext>(
 async function resolvePendingApproval(
   approvalId: string,
   decision: "allow" | "deny",
-  source: string
+  source: string,
 ) {
   const approval = await getPendingApproval(approvalId);
 
@@ -224,7 +241,8 @@ async function resolvePendingApproval(
     .getInterruptions()
     .find(
       (item: { rawItem?: { type?: string; callId?: string } }) =>
-        item.rawItem?.type === "function_call" && item.rawItem.callId === approval.callId
+        item.rawItem?.type === "function_call" &&
+        item.rawItem.callId === approval.callId,
     );
 
   if (!approvalItem) {
@@ -241,7 +259,7 @@ async function resolvePendingApproval(
   await deletePendingApproval(
     approvalId,
     decision === "allow" ? "allowed" : "denied",
-    source
+    source,
   );
   await markDiscordApprovalResolved(approval, decision, source);
 
@@ -249,7 +267,10 @@ async function resolvePendingApproval(
   return createRunResponse(approval.agentId, result);
 }
 
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 25 * 1024 * 1024 } });
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 25 * 1024 * 1024 },
+});
 
 // Wire up the Discord interaction handler to resolve approvals
 setApprovalDecisionHandler(async (approvalId, decision, source) => {
@@ -286,16 +307,14 @@ if (!existingPolicies.some((p) => p.toolName === "createFixedCost")) {
     toolName: "createFixedCost",
     action: "auto_deny",
     conditionGroup: "all",
-    conditions: [
-      { field: "monthly_amount", operator: "gt", value: 3000 },
-    ],
+    conditions: [{ field: "monthly_amount", operator: "gt", value: 3000 }],
     enabled: true,
   });
   console.log("Seeded default policy: createFixedCost monthly_amount > 3000");
 }
 
 const allowedOrigins: (string | RegExp)[] = process.env.CORS_ORIGIN
-  ? process.env.CORS_ORIGIN.split(",").map(o => o.trim())
+  ? process.env.CORS_ORIGIN.split(",").map((o) => o.trim())
   : [/localhost:\d+/];
 if (process.env.VERCEL) {
   allowedOrigins.push(/\.vercel\.app$/);
@@ -307,7 +326,7 @@ app.use(cors({ origin: allowedOrigins }));
 app.post(
   "/api/discord/interactions",
   express.raw({ type: "application/json" }),
-  handleDiscordInteraction
+  handleDiscordInteraction,
 );
 
 app.use(express.json());
@@ -327,13 +346,16 @@ async function resolveCompanyDB(req: express.Request): Promise<string> {
 
   const token = authHeader.slice(7);
   const supabase = getSupabase();
-  const { data: { user }, error } = await supabase.auth.getUser(token);
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser(token);
 
   if (error || !user) {
     throw new Error("Invalid auth token");
   }
 
-  // Check for explicit db query param first, then look up user's default company
+  // Check for explicit db query param first, then look up user's default company qwer
   const dbParam = req.query.db as string | undefined;
   if (dbParam) return dbParam;
 
@@ -363,7 +385,11 @@ app.post("/api/surreal/query", async (req, res) => {
       await db.close();
     }
   } catch (e) {
-    const msg = (e as Error).message; const status = (msg === "Missing authorization header" || msg === "Invalid auth token") ? 401 : 500;
+    const msg = (e as Error).message;
+    const status =
+      msg === "Missing authorization header" || msg === "Invalid auth token"
+        ? 401
+        : 500;
     res.status(status).json({ error: (e as Error).message });
   }
 });
@@ -397,7 +423,7 @@ app.get("/api/employees/:id/compensation", async (req, res) => {
     const db = await getCompanyDB(surrealDbName);
     try {
       const result = await db.query<[any[]]>(
-        `SELECT * FROM employee:${req.params.id}`
+        `SELECT * FROM employee:${req.params.id}`,
       );
       const employee = result[0]?.[0];
       if (!employee) {
@@ -415,7 +441,11 @@ app.get("/api/employees/:id/compensation", async (req, res) => {
       await db.close();
     }
   } catch (e) {
-    const msg = (e as Error).message; const status = (msg === "Missing authorization header" || msg === "Invalid auth token") ? 401 : 500;
+    const msg = (e as Error).message;
+    const status =
+      msg === "Missing authorization header" || msg === "Invalid auth token"
+        ? 401
+        : 500;
     res.status(status).json({ error: (e as Error).message });
   }
 });
@@ -433,7 +463,11 @@ app.post("/api/surreal/:table", async (req, res) => {
       await db.close();
     }
   } catch (e) {
-    const msg = (e as Error).message; const status = (msg === "Missing authorization header" || msg === "Invalid auth token") ? 401 : 500;
+    const msg = (e as Error).message;
+    const status =
+      msg === "Missing authorization header" || msg === "Invalid auth token"
+        ? 401
+        : 500;
     res.status(status).json({ error: (e as Error).message });
   }
 });
@@ -449,7 +483,10 @@ app.get("/api/user-companies", async (req, res) => {
 
     const token = authHeader.slice(7);
     const supabase = getSupabase();
-    const { data: { user }, error } = await supabase.auth.getUser(token);
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.getUser(token);
 
     if (error || !user) {
       res.status(401).json({ error: "Invalid auth token" });
@@ -484,7 +521,11 @@ app.get("/api/changes", async (req, res) => {
       await db.close();
     }
   } catch (e) {
-    const msg = (e as Error).message; const status = (msg === "Missing authorization header" || msg === "Invalid auth token") ? 401 : 500;
+    const msg = (e as Error).message;
+    const status =
+      msg === "Missing authorization header" || msg === "Invalid auth token"
+        ? 401
+        : 500;
     res.status(status).json({ error: (e as Error).message });
   }
 });
@@ -495,20 +536,37 @@ app.get("/api/ontology/finance", async (req, res) => {
     const db = await getCompanyDB(surrealDbName);
     try {
       // Query finance data from SurrealDB
-      const [costCenters] = await db.query<[Array<Record<string, unknown>>]>("SELECT * FROM cost_center");
-      const [fixedExpenses] = await db.query<[Array<Record<string, unknown>>]>("SELECT * FROM fixed_expense");
-      const [budgetLines] = await db.query<[Array<Record<string, unknown>>]>("SELECT * FROM budget_line");
-      const [costs] = await db.query<[Array<Record<string, unknown>>]>("SELECT * FROM costs");
-      const [variances] = await db.query<[Array<Record<string, unknown>>]>("SELECT * FROM variance");
-      const [bankAccounts] = await db.query<[Array<Record<string, unknown>>]>("SELECT * FROM bank_account");
-      const [runwayCalcs] = await db.query<[Array<Record<string, unknown>>]>("SELECT * FROM runway_calculation");
-      const [forecasts] = await db.query<[Array<Record<string, unknown>>]>("SELECT * FROM financial_forecast");
+      const [costCenters] = await db.query<[Array<Record<string, unknown>>]>(
+        "SELECT * FROM cost_center",
+      );
+      const [fixedExpenses] = await db.query<[Array<Record<string, unknown>>]>(
+        "SELECT * FROM fixed_expense",
+      );
+      const [budgetLines] = await db.query<[Array<Record<string, unknown>>]>(
+        "SELECT * FROM budget_line",
+      );
+      const [costs] = await db.query<[Array<Record<string, unknown>>]>(
+        "SELECT * FROM costs",
+      );
+      const [variances] = await db.query<[Array<Record<string, unknown>>]>(
+        "SELECT * FROM variance",
+      );
+      const [bankAccounts] = await db.query<[Array<Record<string, unknown>>]>(
+        "SELECT * FROM bank_account",
+      );
+      const [runwayCalcs] = await db.query<[Array<Record<string, unknown>>]>(
+        "SELECT * FROM runway_calculation",
+      );
+      const [forecasts] = await db.query<[Array<Record<string, unknown>>]>(
+        "SELECT * FROM financial_forecast",
+      );
 
       const totalFixedMonthly = (fixedExpenses ?? []).reduce(
-        (sum, fe) => sum + Number(fe.amount ?? 0), 0
+        (sum, fe) => sum + Number(fe.amount ?? 0),
+        0,
       );
       const flaggedVariances = (variances ?? []).filter(
-        (v) => v.status === "flagged"
+        (v) => v.status === "flagged",
       ).length;
       const bankBalance = (bankAccounts ?? [])[0]?.current_balance
         ? Number((bankAccounts ?? [])[0].current_balance)
@@ -519,12 +577,38 @@ app.get("/api/ontology/finance", async (req, res) => {
       // Build graph with real summaries
       const graph = {
         nodes: [
-          { id: "cost_center", label: "Cost Centers", count: (costCenters ?? []).length },
-          { id: "budget_line", label: "Budget Lines", count: (budgetLines ?? []).length },
-          { id: "fixed_expense", label: "Fixed Expenses", count: (fixedExpenses ?? []).length, totalMonthly: totalFixedMonthly },
-          { id: "costs", label: "Costs (Actuals)", count: (costs ?? []).length },
-          { id: "variance", label: "Variances", count: (variances ?? []).length, flagged: flaggedVariances },
-          { id: "forecast", label: "Forecast", count: (forecasts ?? []).length },
+          {
+            id: "cost_center",
+            label: "Cost Centers",
+            count: (costCenters ?? []).length,
+          },
+          {
+            id: "budget_line",
+            label: "Budget Lines",
+            count: (budgetLines ?? []).length,
+          },
+          {
+            id: "fixed_expense",
+            label: "Fixed Expenses",
+            count: (fixedExpenses ?? []).length,
+            totalMonthly: totalFixedMonthly,
+          },
+          {
+            id: "costs",
+            label: "Costs (Actuals)",
+            count: (costs ?? []).length,
+          },
+          {
+            id: "variance",
+            label: "Variances",
+            count: (variances ?? []).length,
+            flagged: flaggedVariances,
+          },
+          {
+            id: "forecast",
+            label: "Forecast",
+            count: (forecasts ?? []).length,
+          },
           { id: "runway", label: "Runway", months: runwayMonths },
           { id: "bank", label: "Bank Account", balance: bankBalance },
         ],
@@ -548,7 +632,11 @@ app.get("/api/ontology/finance", async (req, res) => {
       await db.close();
     }
   } catch (e) {
-    const msg = (e as Error).message; const status = (msg === "Missing authorization header" || msg === "Invalid auth token") ? 401 : 500;
+    const msg = (e as Error).message;
+    const status =
+      msg === "Missing authorization header" || msg === "Invalid auth token"
+        ? 401
+        : 500;
     res.status(status).json({ error: (e as Error).message });
   }
 });
@@ -560,7 +648,9 @@ app.post("/api/changes/:id/approve", async (req, res) => {
     try {
       const cr = await approveChangeRequest(db, req.params.id, "ui");
       if (!cr) {
-        res.status(404).json({ error: `Unknown change request '${req.params.id}'` });
+        res
+          .status(404)
+          .json({ error: `Unknown change request '${req.params.id}'` });
         return;
       }
 
@@ -573,7 +663,11 @@ app.post("/api/changes/:id/approve", async (req, res) => {
       await db.close();
     }
   } catch (e) {
-    const msg = (e as Error).message; const status = (msg === "Missing authorization header" || msg === "Invalid auth token") ? 401 : 500;
+    const msg = (e as Error).message;
+    const status =
+      msg === "Missing authorization header" || msg === "Invalid auth token"
+        ? 401
+        : 500;
     res.status(status).json({ error: (e as Error).message });
   }
 });
@@ -585,7 +679,9 @@ app.post("/api/changes/:id/reject", async (req, res) => {
     try {
       const cr = await rejectChangeRequest(db, req.params.id, "ui");
       if (!cr) {
-        res.status(404).json({ error: `Unknown change request '${req.params.id}'` });
+        res
+          .status(404)
+          .json({ error: `Unknown change request '${req.params.id}'` });
         return;
       }
 
@@ -597,11 +693,14 @@ app.post("/api/changes/:id/reject", async (req, res) => {
       await db.close();
     }
   } catch (e) {
-    const msg = (e as Error).message; const status = (msg === "Missing authorization header" || msg === "Invalid auth token") ? 401 : 500;
+    const msg = (e as Error).message;
+    const status =
+      msg === "Missing authorization header" || msg === "Invalid auth token"
+        ? 401
+        : 500;
     res.status(status).json({ error: (e as Error).message });
   }
 });
-
 
 // ── Legacy routes ───────────────────────────────────────────
 
@@ -628,9 +727,13 @@ app.post("/api/transcribe", upload.single("file"), async (req, res) => {
       return;
     }
 
-    const audioFile = new File([new Uint8Array(file.buffer)], file.originalname || "recording.wav", {
-      type: file.mimetype || "audio/wav",
-    });
+    const audioFile = new File(
+      [new Uint8Array(file.buffer)],
+      file.originalname || "recording.wav",
+      {
+        type: file.mimetype || "audio/wav",
+      },
+    );
 
     const transcription = await openai.audio.transcriptions.create({
       file: audioFile,
@@ -683,7 +786,9 @@ app.get("/api/policies", (_req, res) => {
 
 app.post("/api/policies", (req, res) => {
   try {
-    const policy = createPolicy(validatePolicyDraft(req.body as Record<string, unknown>));
+    const policy = createPolicy(
+      validatePolicyDraft(req.body as Record<string, unknown>),
+    );
     res.status(201).json({ policy });
   } catch (e) {
     res.status(400).json({ error: (e as Error).message });
@@ -704,8 +809,8 @@ app.patch("/api/policies/:policyId", (req: any, res: any) => {
       policyId,
       validatePolicyDraft(
         { ...existingPolicy, ...(req.body as Record<string, unknown>) },
-        existingPolicy.toolName
-      )
+        existingPolicy.toolName,
+      ),
     );
 
     res.json({ policy });
@@ -822,7 +927,7 @@ app.post("/api/agents/:agentId/stream", async (req: any, res: any) => {
 
     await pipeline(
       result.toTextStream({ compatibleWithNodeStreams: true }),
-      res
+      res,
     );
     await result.completed;
   } catch (e) {
