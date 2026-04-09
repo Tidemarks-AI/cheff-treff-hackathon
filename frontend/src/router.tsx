@@ -7,6 +7,7 @@ import {
 } from "@tanstack/react-router"
 import { supabase } from "@/lib/supabase"
 import App from "./App"
+import Agents from "./pages/Agents"
 import Home from "./pages/Home"
 import Login from "./pages/Login"
 
@@ -48,9 +49,15 @@ const indexRoute = createRoute({
   component: Home,
 })
 
+const agentsRoute = createRoute({
+  getParentRoute: () => authenticatedLayout,
+  path: "/debug/agents",
+  component: Agents,
+})
+
 const routeTree = rootRoute.addChildren([
   loginRoute,
-  authenticatedLayout.addChildren([indexRoute]),
+  authenticatedLayout.addChildren([indexRoute, agentsRoute]),
 ])
 
 export const router = createRouter({ routeTree })

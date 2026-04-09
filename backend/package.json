@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "tsx watch --env-file=../.env src/index.ts",
     "build": "tsc",
-    "start": "node --env-file=.env dist/index.js",
+    "start": "node --env-file=.env dist/src/index.js",
     "db:start": "supabase start",
     "db:stop": "supabase stop",
     "db:reset": "supabase db reset",

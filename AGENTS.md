@@ -41,8 +41,21 @@ Important variables:
 - `frontend/src/pages/Home.tsx`: current main page
 - `frontend/src/components/dashboard/*`: dashboard UI
 - `backend/src/index.ts`: Express entrypoint and API routes
-- `backend/src/lib/agents.ts`: OpenAI agent definition
+- `backend/src/lib/agents.ts`: OpenAI agent registry and dynamic loader
 - `backend/src/lib/supabase.ts`: Supabase client setup
+- `backend/tools.ts`: shared OpenAI Agents SDK tool registry
+- `backend/agents/*/config.ts`: one folder per agent with a default-exported agent config
+
+## Agent Structure
+
+- Backend agents live in `backend/agents`
+- Every agent must have its own folder, for example `backend/agents/startup-advisor`
+- Each agent folder must contain a `config.ts` file with a default export matching the shared `AgentConfig` shape
+- The config should define `id`, `name`, `description`, `systemprompt`, and `tools`
+- A config may optionally define `model` to override the default
+- The backend agent registry applies the default model `gpt-5.4-mini` when no override is set
+- Shared allowed tools are defined in `backend/tools.ts`
+- Agents are discovered automatically from `backend/agents/*/config.ts`, so no manual registration in `backend/src/lib/agents.ts` is needed
 
 ## Working Notes For Agents
 

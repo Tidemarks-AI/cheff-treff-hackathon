@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react"
-import { Scale, Wallet, Users, Settings } from "lucide-react"
+import { Bug, Scale, Wallet, Users, Settings } from "lucide-react"
 
 export type NavSection = {
   label: string
@@ -43,6 +43,11 @@ export const sidebarNav: NavSection[] = [
       { title: "Workflows", href: "#" },
       { title: "Integrations", href: "#" },
     ],
+  },
+  {
+    label: "Debug",
+    icon: Bug,
+    items: [{ title: "Agents Workspace", href: "/debug/agents" }],
   },
 ]
 

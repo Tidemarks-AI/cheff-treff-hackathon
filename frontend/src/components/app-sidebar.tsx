@@ -1,3 +1,4 @@
+import { Link, useRouterState } from "@tanstack/react-router"
 import { ChevronDown, ChevronsUpDown, LogOut, Rocket } from "lucide-react"
 
 import { useAuth } from "@/contexts/auth-context"
@@ -32,6 +33,7 @@ import {
 
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   const { user, signOut } = useAuth()
+  const pathname = useRouterState({ select: (state) => state.location.pathname })
   const initials = user?.email?.slice(0, 2).toUpperCase() ?? "?"
   const displayName = user?.user_metadata?.full_name ?? user?.email ?? "User"
 
@@ -76,7 +78,13 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
                   <SidebarMenu>
                     {section.items.map((item) => (
                       <SidebarMenuItem key={item.title}>
-                        <SidebarMenuButton tooltip={item.title}>
+                        <SidebarMenuButton
+                          tooltip={item.title}
+                          isActive={item.href !== "#" && pathname === item.href}
+                          render={
+                            item.href !== "#" ? <Link to={item.href} /> : undefined
+                          }
+                        >
                           <span>{item.title}</span>
                         </SidebarMenuButton>
                       </SidebarMenuItem>
