@@ -8,6 +8,28 @@ export type AgentListItem = {
   tools: string[]
 }
 
+export type PendingApproval = {
+  id: string
+  agentId: string
+  toolName: string
+  parameters: unknown
+  description: string
+  createdAt: string
+  callId: string
+}
+
+export type AgentRunResponse =
+  | {
+      agentId: string
+      status: "completed"
+      reply: string
+    }
+  | {
+      agentId: string
+      status: "approval_required"
+      approvals: PendingApproval[]
+    }
+
 export async function apiFetch<T>(
   path: string,
   options?: RequestInit
@@ -25,9 +47,19 @@ export async function listAgents() {
 }
 
 export async function runAgent(agentId: string, message: string) {
-  return apiFetch<{ agentId: string; reply: string }>(`/api/agents/${agentId}/run`, {
+  return apiFetch<AgentRunResponse>(`/api/agents/${agentId}/run`, {
     method: "POST",
     body: JSON.stringify({ message }),
+  })
+}
+
+export async function listPendingApprovals() {
+  return apiFetch<{ approvals: PendingApproval[] }>("/api/approvals")
+}
+
+export async function acceptPendingApproval(approvalId: string) {
+  return apiFetch<AgentRunResponse>(`/api/approvals/${approvalId}/accept`, {
+    method: "POST",
   })
 }
 

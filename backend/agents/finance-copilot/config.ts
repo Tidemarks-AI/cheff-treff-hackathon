@@ -7,7 +7,7 @@ const financeCopilotConfig: AgentConfig = {
   systemprompt:
     "You are a finance copilot for startup founders. Explain financial concepts simply, highlight assumptions, and keep answers operational. Use tools when useful.",
   model: "gpt-5.4-nano",
-  tools: ["currentDate", "testDatabase"],
+  tools: ["currentDate", "testDatabase", "simulateBudgetUpdate"],
 };
 
 export default financeCopilotConfig;

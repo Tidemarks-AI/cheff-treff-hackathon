@@ -16,39 +16,47 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
-import { listAgents, streamAgent, type AgentListItem } from "@/lib/api"
+import {
+  acceptPendingApproval,
+  listAgents,
+  listPendingApprovals,
+  runAgent,
+  type AgentListItem,
+  type PendingApproval,
+} from "@/lib/api"
+
+function formatParameters(parameters: unknown) {
+  return JSON.stringify(parameters, null, 2)
+}
 
 export default function Agents() {
   const [agents, setAgents] = useState<AgentListItem[]>([])
   const [selectedAgentId, setSelectedAgentId] = useState("")
   const [message, setMessage] = useState("Create a simple 30-day founder operating plan.")
   const [reply, setReply] = useState("")
+  const [pendingApprovals, setPendingApprovals] = useState<PendingApproval[]>([])
   const [error, setError] = useState("")
-  const [isStreaming, setIsStreaming] = useState(false)
-  const abortControllerRef = useRef<AbortController | null>(null)
+  const [isRunning, setIsRunning] = useState(false)
+  const [acceptingApprovalId, setAcceptingApprovalId] = useState<string | null>(null)
+  const mountedRef = useRef(true)
 
   useEffect(() => {
-    let isMounted = true
+    mountedRef.current = true
 
-    void listAgents()
-      .then(({ agents: nextAgents }) => {
-        if (!isMounted) return
+    void Promise.all([listAgents(), listPendingApprovals()])
+      .then(([{ agents: nextAgents }, { approvals }]) => {
+        if (!mountedRef.current) return
         setAgents(nextAgents)
-        setSelectedAgentId(nextAgents[0]?.id ?? "")
+        setPendingApprovals(approvals)
+        setSelectedAgentId((currentAgentId) => currentAgentId || nextAgents[0]?.id || "")
       })
       .catch((nextError: Error) => {
-        if (!isMounted) return
+        if (!mountedRef.current) return
         setError(nextError.message)
       })
 
     return () => {
-      isMounted = false
-    }
-  }, [])
-
-  useEffect(() => {
-    return () => {
-      abortControllerRef.current?.abort()
+      mountedRef.current = false
     }
   }, [])
 
@@ -58,39 +66,63 @@ export default function Agents() {
     setSelectedAgentId(value ?? "")
   }
 
-  function handleStop() {
-    abortControllerRef.current?.abort()
-  }
-
   function handleSubmit() {
-    if (!selectedAgentId || !message.trim() || isStreaming) return
+    if (!selectedAgentId || !message.trim() || isRunning) return
 
     setError("")
     setReply("")
-    setIsStreaming(true)
+    setIsRunning(true)
 
-    const abortController = new AbortController()
-    abortControllerRef.current = abortController
-
-    void streamAgent(selectedAgentId, message, {
-      signal: abortController.signal,
-      onChunk: (chunk) => {
-        setReply((currentReply) => currentReply + chunk)
-      },
-    })
-      .catch((nextError: Error) => {
-        if (abortController.signal.aborted) {
+    void runAgent(selectedAgentId, message)
+      .then((result) => {
+        if (result.status === "completed") {
+          setReply(result.reply)
           return
         }
 
+        setPendingApprovals((currentApprovals) => {
+          const existingApprovalIds = new Set(currentApprovals.map((approval) => approval.id))
+
+          return [
+            ...currentApprovals,
+            ...result.approvals.filter((approval) => !existingApprovalIds.has(approval.id)),
+          ]
+        })
+        setReply("Approval required before the agent can continue.")
+      })
+      .catch((nextError: Error) => {
         setError(nextError.message)
       })
       .finally(() => {
-        if (abortControllerRef.current === abortController) {
-          abortControllerRef.current = null
+        setIsRunning(false)
+      })
+  }
+
+  function handleAcceptApproval(approvalId: string) {
+    if (acceptingApprovalId) return
+
+    setError("")
+    setAcceptingApprovalId(approvalId)
+
+    void acceptPendingApproval(approvalId)
+      .then((result) => {
+        setPendingApprovals((currentApprovals) =>
+          currentApprovals.filter((approval) => approval.id !== approvalId)
+        )
+
+        if (result.status === "completed") {
+          setReply(result.reply)
+          return
         }
 
-        setIsStreaming(false)
+        setPendingApprovals((currentApprovals) => [...currentApprovals, ...result.approvals])
+        setReply("Another approval is required before the agent can continue.")
+      })
+      .catch((nextError: Error) => {
+        setError(nextError.message)
+      })
+      .finally(() => {
+        setAcceptingApprovalId(null)
       })
   }
 
@@ -107,7 +139,7 @@ export default function Agents() {
         <CardHeader>
           <CardTitle>Agent Runner</CardTitle>
           <CardDescription>
-            Select an agent, send a prompt, and inspect the streamed response.
+            Select an agent, send a prompt, and approve mutating tool calls before they run.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -142,14 +174,11 @@ export default function Agents() {
                 value={message}
                 onChange={(event) => setMessage(event.target.value)}
                 placeholder="Ask an agent something useful"
-                disabled={isStreaming}
+                disabled={isRunning}
               />
               <div className="flex items-center gap-3">
-                <Button disabled={isStreaming || !selectedAgentId} onClick={handleSubmit}>
-                  {isStreaming ? "Streaming..." : "Run agent"}
-                </Button>
-                <Button disabled={!isStreaming} variant="outline" onClick={handleStop}>
-                  Stop
+                <Button disabled={isRunning || !selectedAgentId} onClick={handleSubmit}>
+                  {isRunning ? "Running..." : "Run agent"}
                 </Button>
                 {error ? <span className="text-sm text-destructive">{error}</span> : null}
               </div>
@@ -158,6 +187,43 @@ export default function Agents() {
               </div>
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Pending Approvals</CardTitle>
+          <CardDescription>
+            Mutating functions stay here until a human explicitly approves them.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {pendingApprovals.length === 0 ? (
+            <div className="rounded-lg border border-dashed border-border p-4 text-sm text-muted-foreground">
+              No pending approvals.
+            </div>
+          ) : (
+            pendingApprovals.map((approval) => (
+              <div key={approval.id} className="space-y-3 rounded-lg border border-border p-4">
+                <div className="space-y-1">
+                  <div className="text-sm font-medium">{approval.toolName}</div>
+                  <div className="text-sm text-muted-foreground">{approval.description}</div>
+                  <div className="text-xs text-muted-foreground">
+                    Agent: {approval.agentId} · Created: {new Date(approval.createdAt).toLocaleString()}
+                  </div>
+                </div>
+                <pre className="overflow-x-auto rounded-md bg-muted/50 p-3 text-xs whitespace-pre-wrap">
+                  {formatParameters(approval.parameters)}
+                </pre>
+                <Button
+                  onClick={() => handleAcceptApproval(approval.id)}
+                  disabled={acceptingApprovalId !== null}
+                >
+                  {acceptingApprovalId === approval.id ? "Accepting..." : "Accept"}
+                </Button>
+              </div>
+            ))
+          )}
         </CardContent>
       </Card>
     </div>
