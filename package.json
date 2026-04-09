@@ -1,0 +1,13 @@
+{
+  "name": "hackathon-starter",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently -n fe,be -c blue,green \"pnpm --prefix frontend dev\" \"pnpm --prefix backend dev\"",
+    "dev:frontend": "pnpm --prefix frontend dev",
+    "dev:backend": "pnpm --prefix backend dev",
+    "install:all": "pnpm --prefix frontend install && pnpm --prefix backend install"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
