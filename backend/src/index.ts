@@ -9,8 +9,15 @@ import {
   createPendingApprovals,
   deletePendingApproval,
   getPendingApproval,
+  getPendingApprovalByDiscordMessageId,
   listPendingApprovals,
+  updatePendingApproval,
 } from "./lib/approvals.js";
+import {
+  initDiscordApprovalBot,
+  markDiscordApprovalResolved,
+  postApprovalToDiscord,
+} from "./lib/discord-approvals.js";
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -19,15 +26,29 @@ function formatReply(output: unknown) {
   return typeof output === "string" ? output : JSON.stringify(output);
 }
 
-function createRunResponse<TContext>(
+async function createRunResponse<TContext>(
   agentId: string,
   result: RunResult<TContext, any>
 ) {
   if (result.interruptions.length > 0) {
+    const approvals = createPendingApprovals(agentId, result);
+
+    const approvalsWithDiscordState = await Promise.all(
+      approvals.map(async (approval) => {
+        const discordMessage = await postApprovalToDiscord(approval);
+
+        if (discordMessage) {
+          return updatePendingApproval(approval.id, discordMessage) ?? approval;
+        }
+
+        return approval;
+      })
+    );
+
     return {
       agentId,
       status: "approval_required" as const,
-      approvals: createPendingApprovals(agentId, result),
+      approvals: approvalsWithDiscordState,
     };
   }
 
@@ -36,6 +57,49 @@ function createRunResponse<TContext>(
     status: "completed" as const,
     reply: formatReply(result.finalOutput),
   };
+}
+
+async function resolvePendingApproval(
+  approvalId: string,
+  decision: "allow" | "deny",
+  source: string
+) {
+  const approval = getPendingApproval(approvalId);
+
+  if (!approval) {
+    throw new Error(`Unknown approval '${approvalId}'`);
+  }
+
+  const agent = await getAgent(approval.agentId);
+
+  if (!agent) {
+    throw new Error(`Unknown agent '${approval.agentId}'`);
+  }
+
+  const runState = await RunState.fromString(agent, approval.runState);
+  const approvalItem = runState
+    .getInterruptions()
+    .find(
+      (item: { rawItem?: { type?: string; callId?: string } }) =>
+        item.rawItem?.type === "function_call" && item.rawItem.callId === approval.callId
+    );
+
+  if (!approvalItem) {
+    deletePendingApproval(approvalId);
+    throw new Error("Approval is no longer pending");
+  }
+
+  if (decision === "allow") {
+    runState.approve(approvalItem);
+  } else {
+    runState.reject(approvalItem);
+  }
+
+  deletePendingApproval(approvalId);
+  await markDiscordApprovalResolved(approval, decision, source);
+
+  const result = await run(agent, runState);
+  return createRunResponse(approval.agentId, result);
 }
 
 app.use(cors({ origin: process.env.CORS_ORIGIN || "http://localhost:5173" }));
@@ -104,7 +168,7 @@ app.post("/api/agent", async (req, res) => {
     }
 
     const result = await run(agent, message || "Hello!");
-    res.json(createRunResponse(agentId, result));
+    res.json(await createRunResponse(agentId, result));
   } catch (e) {
     res.status(500).json({ error: (e as Error).message });
   }
@@ -122,7 +186,7 @@ app.post("/api/agents/:agentId/run", async (req, res) => {
     }
 
     const result = await run(agent, message || "Hello!");
-    res.json(createRunResponse(agentId, result));
+    res.json(await createRunResponse(agentId, result));
   } catch (e) {
     res.status(500).json({ error: (e as Error).message });
   }
@@ -131,42 +195,24 @@ app.post("/api/agents/:agentId/run", async (req, res) => {
 app.post("/api/approvals/:approvalId/accept", async (req, res) => {
   try {
     const { approvalId } = req.params;
-    const approval = getPendingApproval(approvalId);
-
-    if (!approval) {
-      res.status(404).json({ error: `Unknown approval '${approvalId}'` });
-      return;
-    }
-
-    const agent = await getAgent(approval.agentId);
-
-    if (!agent) {
-      res.status(404).json({ error: `Unknown agent '${approval.agentId}'` });
-      return;
-    }
-
-    const runState = await RunState.fromString(agent, approval.runState);
-    const approvalItem = runState
-      .getInterruptions()
-      .find(
-        (item: { rawItem?: { type?: string; callId?: string } }) =>
-          item.rawItem?.type === "function_call" &&
-          item.rawItem.callId === approval.callId
-      );
-
-    if (!approvalItem) {
-      deletePendingApproval(approvalId);
-      res.status(410).json({ error: "Approval is no longer pending" });
-      return;
-    }
-
-    runState.approve(approvalItem);
-    deletePendingApproval(approvalId);
-
-    const result = await run(agent, runState);
-    res.json(createRunResponse(approval.agentId, result));
+    res.json(await resolvePendingApproval(approvalId, "allow", "ui"));
   } catch (e) {
-    res.status(500).json({ error: (e as Error).message });
+    const error = e as Error;
+    res.status(error.message.startsWith("Unknown approval") ? 404 : 500).json({
+      error: error.message,
+    });
+  }
+});
+
+app.post("/api/approvals/:approvalId/deny", async (req, res) => {
+  try {
+    const { approvalId } = req.params;
+    res.json(await resolvePendingApproval(approvalId, "deny", "ui"));
+  } catch (e) {
+    const error = e as Error;
+    res.status(error.message.startsWith("Unknown approval") ? 404 : 500).json({
+      error: error.message,
+    });
   }
 });
 
@@ -220,6 +266,18 @@ app.post("/api/agents/:agentId/stream", async (req, res) => {
 if (process.env.VERCEL) {
   // Vercel handles routing via serverless functions
 } else {
+  void initDiscordApprovalBot(async (discordMessageId, decision, source) => {
+    const approval = getPendingApprovalByDiscordMessageId(discordMessageId);
+
+    if (!approval) {
+      return;
+    }
+
+    await resolvePendingApproval(approval.id, decision, source);
+  }).catch((error: Error) => {
+    console.warn(`Discord approval bot failed to initialize: ${error.message}`);
+  });
+
   app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
   });

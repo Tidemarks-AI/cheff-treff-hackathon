@@ -12,6 +12,9 @@ export type PendingApproval = {
   createdAt: string;
   callId: string;
   runState: string;
+  discordMessageId?: string;
+  discordChannelId?: string;
+  discordGuildId?: string;
 };
 
 const pendingApprovals = new Map<string, PendingApproval>();
@@ -72,6 +75,27 @@ export function listPendingApprovals() {
 
 export function getPendingApproval(approvalId: string) {
   return pendingApprovals.get(approvalId);
+}
+
+export function getPendingApprovalByDiscordMessageId(discordMessageId: string) {
+  return [...pendingApprovals.values()].find(
+    (approval) => approval.discordMessageId === discordMessageId
+  );
+}
+
+export function updatePendingApproval(
+  approvalId: string,
+  updates: Partial<PendingApproval>
+) {
+  const approval = pendingApprovals.get(approvalId);
+
+  if (!approval) {
+    return undefined;
+  }
+
+  const nextApproval = { ...approval, ...updates };
+  pendingApprovals.set(approvalId, nextApproval);
+  return nextApproval;
 }
 
 export function deletePendingApproval(approvalId: string) {

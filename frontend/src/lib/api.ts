@@ -63,6 +63,12 @@ export async function acceptPendingApproval(approvalId: string) {
   })
 }
 
+export async function denyPendingApproval(approvalId: string) {
+  return apiFetch<AgentRunResponse>(`/api/approvals/${approvalId}/deny`, {
+    method: "POST",
+  })
+}
+
 export async function streamAgent(
   agentId: string,
   message: string,

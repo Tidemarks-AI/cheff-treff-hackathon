@@ -13,20 +13,21 @@
     "db:types": "supabase gen types typescript --local > ../frontend/src/types/database.ts"
   },
   "dependencies": {
-    "express": "^5.2.1",
-    "cors": "^2.8.6",
-    "@supabase/supabase-js": "^2.102.1",
-    "openai": "^6.33.0",
     "@openai/agents": "^0.1.0",
+    "@supabase/supabase-js": "^2.102.1",
+    "cors": "^2.8.6",
+    "discord.js": "^14.26.2",
+    "express": "^5.2.1",
+    "openai": "^6.33.0",
     "zod": "^3.25.0"
   },
   "devDependencies": {
-    "typescript": "^5.8.3",
-    "tsx": "^4.21.0",
-    "supabase": "^2.25.0",
-    "@types/node": "^22.15.3",
     "@types/cors": "^2.8.19",
-    "@types/express": "^5.0.2"
+    "@types/express": "^5.0.2",
+    "@types/node": "^22.15.3",
+    "supabase": "^2.25.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.8.3"
   },
   "pnpm": {
     "onlyBuiltDependencies": []

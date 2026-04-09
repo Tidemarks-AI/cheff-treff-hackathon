@@ -18,6 +18,7 @@ import {
 import { Textarea } from "@/components/ui/textarea"
 import {
   acceptPendingApproval,
+  denyPendingApproval,
   listAgents,
   listPendingApprovals,
   runAgent,
@@ -37,7 +38,7 @@ export default function Agents() {
   const [pendingApprovals, setPendingApprovals] = useState<PendingApproval[]>([])
   const [error, setError] = useState("")
   const [isRunning, setIsRunning] = useState(false)
-  const [acceptingApprovalId, setAcceptingApprovalId] = useState<string | null>(null)
+  const [resolvingApprovalId, setResolvingApprovalId] = useState<string | null>(null)
   const mountedRef = useRef(true)
 
   useEffect(() => {
@@ -98,13 +99,18 @@ export default function Agents() {
       })
   }
 
-  function handleAcceptApproval(approvalId: string) {
-    if (acceptingApprovalId) return
+  function handleResolveApproval(approvalId: string, decision: "allow" | "deny") {
+    if (resolvingApprovalId) return
 
     setError("")
-    setAcceptingApprovalId(approvalId)
+    setResolvingApprovalId(approvalId)
 
-    void acceptPendingApproval(approvalId)
+    const request =
+      decision === "allow"
+        ? acceptPendingApproval(approvalId)
+        : denyPendingApproval(approvalId)
+
+    void request
       .then((result) => {
         setPendingApprovals((currentApprovals) =>
           currentApprovals.filter((approval) => approval.id !== approvalId)
@@ -116,13 +122,17 @@ export default function Agents() {
         }
 
         setPendingApprovals((currentApprovals) => [...currentApprovals, ...result.approvals])
-        setReply("Another approval is required before the agent can continue.")
+        setReply(
+          decision === "allow"
+            ? "Another approval is required before the agent can continue."
+            : "The request was denied, and the agent is continuing without that function call."
+        )
       })
       .catch((nextError: Error) => {
         setError(nextError.message)
       })
       .finally(() => {
-        setAcceptingApprovalId(null)
+        setResolvingApprovalId(null)
       })
   }
 
@@ -215,12 +225,21 @@ export default function Agents() {
                 <pre className="overflow-x-auto rounded-md bg-muted/50 p-3 text-xs whitespace-pre-wrap">
                   {formatParameters(approval.parameters)}
                 </pre>
-                <Button
-                  onClick={() => handleAcceptApproval(approval.id)}
-                  disabled={acceptingApprovalId !== null}
-                >
-                  {acceptingApprovalId === approval.id ? "Accepting..." : "Accept"}
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => handleResolveApproval(approval.id, "allow")}
+                    disabled={resolvingApprovalId !== null}
+                  >
+                    {resolvingApprovalId === approval.id ? "Resolving..." : "Accept"}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => handleResolveApproval(approval.id, "deny")}
+                    disabled={resolvingApprovalId !== null}
+                  >
+                    {resolvingApprovalId === approval.id ? "Resolving..." : "Deny"}
+                  </Button>
+                </div>
               </div>
             ))
           )}
