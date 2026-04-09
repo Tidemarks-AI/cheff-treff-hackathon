@@ -191,35 +191,31 @@ export async function handleDiscordInteraction(req: Request, res: Response) {
     const userId = interaction.member?.user?.id ?? interaction.user?.id ?? "unknown";
     const source = `discord-button:${userId}`;
 
-    // Respond immediately with deferred update (acknowledge the button click)
-    res.json({ type: RESPONSE_TYPE_DEFERRED_UPDATE_MESSAGE });
-
-    // Resolve the approval in the background
+    // Resolve the approval BEFORE responding (Vercel kills the function after res.json)
+    let resolveError: string | null = null;
     if (approvalDecisionHandler) {
       try {
         await approvalDecisionHandler(approvalId, decision, source);
       } catch (error) {
+        resolveError = (error as Error).message;
         console.warn(
-          `Failed to resolve approval ${approvalId}: ${(error as Error).message}`
+          `Failed to resolve approval ${approvalId}: ${resolveError}`
         );
       }
     }
 
-    // Post a followup message with the result
-    if (applicationId) {
-      const interactionToken = interaction.token as string;
-      await fetch(
-        `${DISCORD_API}/webhooks/${applicationId}/${interactionToken}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            content: `Approval **${decision === "allow" ? "granted" : "denied"}** by <@${userId}>.`,
-            flags: 64, // Ephemeral - only visible to the user who clicked
-          }),
-        }
-      );
-    }
+    const label = decision === "allow" ? "Allowed" : "Denied";
+
+    // Respond with an updated message (buttons replaced with result)
+    res.json({
+      type: 7, // UPDATE_MESSAGE
+      data: {
+        content: resolveError
+          ? `Failed to resolve approval: ${resolveError}`
+          : `Approval **${label}** by <@${userId}>.`,
+        components: [],
+      },
+    });
 
     return;
   }
