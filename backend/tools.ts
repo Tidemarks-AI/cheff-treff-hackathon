@@ -229,11 +229,14 @@ const whatIfImpact = defineTool({
   access: "read_only",
   name: "whatIfImpact",
   description:
-    "Evaluates a hypothetical scenario against the company's live financial data. " +
-    "Queries SurrealDB for current cost centers, fixed expenses, burn rate, runway, " +
-    "and bank balance, then computes the impact of a proposed monthly cost change. " +
-    "Returns current financials, impact metrics, and a 12-month forecast comparison. " +
-    "Use this for any 'what if' question that involves costs, hiring, or financial changes.",
+    "Evaluates a hypothetical scenario against the company's full live data. " +
+    "Queries SurrealDB for: finance (cost centers, expenses, burn, runway, bank), " +
+    "HR (teams, employees, headcount, salaries, job offers), " +
+    "equity (captable, shareholders, share capital), " +
+    "legal (founding status, company agreement, notary, IHK, tax, VAT), " +
+    "and CRM (leads, opportunities, sales, revenue). " +
+    "Computes financial impact of a proposed monthly cost change. " +
+    "Use this for any 'what if' question about the company.",
   parameters: z.object({
     description: z.string().describe("Short description of the hypothetical scenario, e.g. 'New office in Berlin Mitte'"),
     monthly_amount: z.number().describe("Estimated monthly cost in EUR for this scenario"),
@@ -259,6 +262,28 @@ const whatIfImpact = defineTool({
       const [variances] = await db.query<[Array<Record<string, unknown>>]>("SELECT * FROM variance");
       const [bankAccounts] = await db.query<[Array<Record<string, unknown>>]>("SELECT * FROM bank_account");
       const [runwayCalcs] = await db.query<[Array<Record<string, unknown>>]>("SELECT * FROM runway_calculation");
+      // HR
+      const [teams] = await db.query<[Array<Record<string, unknown>>]>("SELECT * FROM team");
+      const [employees] = await db.query<[Array<Record<string, unknown>>]>("SELECT * FROM employee");
+      const [jobOffers] = await db.query<[Array<Record<string, unknown>>]>("SELECT * FROM job_offer");
+      // Equity
+      const [captable] = await db.query<[Array<Record<string, unknown>>]>("SELECT * FROM captable");
+      const [companyShares] = await db.query<[Array<Record<string, unknown>>]>("SELECT * FROM company_share");
+      const [shareCapital] = await db.query<[Array<Record<string, unknown>>]>("SELECT * FROM share_capital");
+      // Legal
+      const [officialFounding] = await db.query<[Array<Record<string, unknown>>]>("SELECT * FROM official_founding");
+      const [companyAgreement] = await db.query<[Array<Record<string, unknown>>]>("SELECT * FROM company_agreement");
+      const [notaryAppointment] = await db.query<[Array<Record<string, unknown>>]>("SELECT * FROM notary_appointment");
+      const [ihkRegistration] = await db.query<[Array<Record<string, unknown>>]>("SELECT * FROM ihk_registration");
+      const [taxOfficeAccount] = await db.query<[Array<Record<string, unknown>>]>("SELECT * FROM tax_office_account");
+      const [transparencyRegister] = await db.query<[Array<Record<string, unknown>>]>("SELECT * FROM transparency_register");
+      const [vatRegistration] = await db.query<[Array<Record<string, unknown>>]>("SELECT * FROM vat_return_registration");
+      // CRM
+      const [leads] = await db.query<[Array<Record<string, unknown>>]>("SELECT * FROM lead");
+      const [opportunities] = await db.query<[Array<Record<string, unknown>>]>("SELECT * FROM opportunity");
+      const [sales] = await db.query<[Array<Record<string, unknown>>]>("SELECT * FROM sale");
+      const [salesPrognosis] = await db.query<[Array<Record<string, unknown>>]>("SELECT * FROM sales_prognosis");
+      const [revenue] = await db.query<[Array<Record<string, unknown>>]>("SELECT * FROM revenue");
 
       const totalFixedMonthly = (fixedExpenses ?? []).reduce(
         (sum, fe) => sum + Number(fe.amount ?? 0), 0
@@ -305,6 +330,41 @@ const whatIfImpact = defineTool({
         (fe) => matchingCC && String(fe.cost_center) === String(matchingCC.id)
       );
 
+      // Build HR summary per team
+      const teamSummaries = (teams ?? []).map((t) => {
+        const teamId = String(t.id);
+        const members = (employees ?? []).filter((e) => String(e.team) === teamId);
+        const founders = members.filter((e) => String(e.member_type).includes("founder"));
+        // Find salary costs for this team's cost center
+        const cc = (costCenters ?? []).find((c) => String(c.team) === teamId);
+        const teamSalaries = cc
+          ? (fixedExpenses ?? []).filter(
+              (fe) => String(fe.cost_center) === String(cc.id) && String(fe.source_system) === "personio"
+            )
+          : [];
+        const totalSalary = teamSalaries.reduce((sum, fe) => sum + Number(fe.amount ?? 0), 0);
+
+        return {
+          name: t.name,
+          department: t.department,
+          location: t.location,
+          headcount: members.length,
+          founders: founders.length,
+          employees: members.length - founders.length,
+          monthly_salary_cost: totalSalary,
+          members: members.map((e) => ({
+            id: String(e.id).split(":").pop(),
+            type: e.member_type,
+            vesting_months: e.vesting_period_months ?? null,
+            cliff_months: e.vesting_cliff_months ?? null,
+          })),
+        };
+      });
+
+      const totalHeadcount = (employees ?? []).length;
+      const totalFounders = (employees ?? []).filter((e) => String(e.member_type).includes("founder")).length;
+      const openOffers = (jobOffers ?? []).filter((j) => j.status === "draft" || j.status === "sent");
+
       return {
         type: "impact_preview",
         scenario: description,
@@ -319,6 +379,65 @@ const whatIfImpact = defineTool({
           cost_centers: (costCenters ?? []).length,
           fixed_expenses: (fixedExpenses ?? []).length,
           flagged_variances: flaggedVariances,
+        },
+        hr: {
+          total_headcount: totalHeadcount,
+          founders: totalFounders,
+          employees: totalHeadcount - totalFounders,
+          open_job_offers: openOffers.length,
+          job_offers: (jobOffers ?? []).map((j) => ({
+            position: j.position_title,
+            salary: j.offered_salary ? Number(j.offered_salary) : null,
+            status: j.status,
+          })),
+          teams: teamSummaries,
+        },
+        equity: {
+          captable: (captable ?? [])[0] ? {
+            total_shares: (captable ?? [])[0].total_shares,
+            shares_issued: (captable ?? [])[0].shares_issued,
+            shares_reserved: (captable ?? [])[0].shares_reserved,
+          } : null,
+          shareholders: (companyShares ?? []).map((s) => ({
+            name: s.shareholder_name,
+            shares: s.share_count,
+            percentage: s.percentage,
+            share_class: s.share_class,
+          })),
+          share_capital: (shareCapital ?? [])[0] ? {
+            amount: Number((shareCapital ?? [])[0].amount),
+            paid_in: (shareCapital ?? [])[0].paid_in,
+          } : null,
+        },
+        legal: {
+          founding_status: (officialFounding ?? [])[0]?.status ?? "unknown",
+          company_agreement_signed: !!(companyAgreement ?? [])[0]?.signed_at,
+          notary: (notaryAppointment ?? [])[0] ? {
+            status: (notaryAppointment ?? [])[0].status,
+            notary_name: (notaryAppointment ?? [])[0].notary_name,
+          } : null,
+          ihk_status: (ihkRegistration ?? [])[0]?.status ?? "unknown",
+          tax_account: (taxOfficeAccount ?? [])[0] ? {
+            status: (taxOfficeAccount ?? [])[0].status,
+            tax_number: (taxOfficeAccount ?? [])[0].tax_number,
+            vat_id: (taxOfficeAccount ?? [])[0].vat_id,
+          } : null,
+          transparency_register_status: (transparencyRegister ?? [])[0]?.status ?? "unknown",
+          vat_filing_frequency: (vatRegistration ?? [])[0]?.filing_frequency ?? null,
+        },
+        crm: {
+          leads: (leads ?? []).length,
+          opportunities: (opportunities ?? []).map((o) => ({
+            id: String(o.id).split(":").pop(),
+            notes: o.notes,
+          })),
+          closed_sales: (sales ?? []).length,
+          revenue_entries: (revenue ?? []).length,
+          sales_prognosis: (salesPrognosis ?? []).map((sp) => ({
+            period: `${sp.period_start} - ${sp.period_end}`,
+            projected_amount: Number(sp.projected_amount),
+            confidence: sp.confidence_pct,
+          })),
         },
         impact: {
           monthly_burn_delta: monthly_amount,
