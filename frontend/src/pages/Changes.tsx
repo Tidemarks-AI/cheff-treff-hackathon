@@ -5,8 +5,11 @@ import {
   approveChangeRequest,
   rejectChangeRequest,
   connectSSE,
+  triggerGmailPoll,
   type ChangeRequest,
 } from "@/lib/changes-api"
+import { RefreshCw } from "lucide-react"
+import { Button } from "@startupos/ui"
 import { ChangeDetail } from "@/components/changes/ChangeDetail"
 import { ChangeQueue } from "@/components/changes/ChangeQueue"
 import { OntologyPane } from "@/components/changes/OntologyPane"
@@ -16,6 +19,7 @@ export default function Changes() {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [readIds, setReadIds] = useState<Set<string>>(new Set())
+  const [isPolling, setIsPolling] = useState(false)
 
   const activeChange = changes.find((c) => c.id === selectedId) ?? null
 
@@ -46,6 +50,24 @@ export default function Changes() {
         setChanges((prev) => prev.map((c) => (c.id === cr.id ? cr : c))),
     })
     return cleanup
+  }, [])
+
+  const handlePollGmail = useCallback(async () => {
+    setIsPolling(true)
+    try {
+      const result = await triggerGmailPoll()
+      if (result.status === "skipped") {
+        toast.info("Gmail not configured")
+      } else {
+        toast.success("Mail checked")
+        const updated = await listChangeRequests()
+        setChanges(updated)
+      }
+    } catch {
+      toast.error("Failed to check mail")
+    } finally {
+      setIsPolling(false)
+    }
   }, [])
 
   const handleApprove = useCallback(async () => {
@@ -107,8 +129,11 @@ export default function Changes() {
 
       {/* Floating inbox */}
       <div className="pointer-events-auto absolute left-4 top-4 bottom-4 z-10 w-[220px] overflow-hidden rounded-2xl bg-background/60 shadow-lg backdrop-blur-2xl">
-        <div className="px-3 pt-4 pb-2">
+        <div className="flex items-center justify-between px-3 pt-4 pb-2">
           <h3 className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Inbox</h3>
+          <Button variant="ghost" size="icon-xs" onClick={handlePollGmail} disabled={isPolling}>
+            <RefreshCw className={`h-3 w-3 ${isPolling ? "animate-spin" : ""}`} />
+          </Button>
         </div>
         <ChangeQueue changes={changes} selectedId={selectedId} onSelect={handleSelect} readIds={readIds} />
       </div>

@@ -121,6 +121,13 @@ export async function fetchOntologyFinance(): Promise<OntologyFinanceData> {
   return res.json()
 }
 
+export async function triggerGmailPoll(): Promise<{ status: string; reason?: string }> {
+  const headers = await getAuthHeaders()
+  const res = await fetch(`${API_URL}/api/cron/gmail-poll`, { headers })
+  if (!res.ok) throw new Error(`API error: ${res.status}`)
+  return res.json()
+}
+
 export type SSEHandlers = {
   onNew: (cr: ChangeRequest) => void
   onUpdated: (cr: ChangeRequest) => void
