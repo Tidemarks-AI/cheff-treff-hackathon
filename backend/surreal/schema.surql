@@ -1,6 +1,10 @@
 -- =============================================================
 -- Founders Ontology Schema for SurrealDB
 -- Applied per-company database (no company FK needed)
+--
+-- HR data (employees, salaries, contracts) lives in Personio.
+-- CRM data (contacts, deals) lives in HubSpot.
+-- SurrealDB stores the graph / ontology layer with external IDs.
 -- =============================================================
 
 -- ── HR ──────────────────────────────────────────────────────
@@ -9,37 +13,23 @@ DEFINE TABLE team SCHEMAFULL;
 DEFINE FIELD name ON team TYPE string;
 DEFINE FIELD department ON team TYPE option<string>;
 DEFINE FIELD location ON team TYPE option<string>;
+DEFINE FIELD personio_department_id ON team TYPE option<int>;
+DEFINE FIELD personio_team_id ON team TYPE option<int>;
 DEFINE FIELD created_at ON team TYPE datetime DEFAULT time::now();
 DEFINE FIELD updated_at ON team TYPE datetime VALUE time::now();
 
 DEFINE TABLE employee SCHEMAFULL;
+DEFINE FIELD personio_employee_id ON employee TYPE option<int>;
 DEFINE FIELD user_id ON employee TYPE option<string>;
-DEFINE FIELD full_name ON employee TYPE string;
-DEFINE FIELD email ON employee TYPE option<string>;
 DEFINE FIELD team ON employee TYPE option<record<team>>;
 DEFINE FIELD member_type ON employee TYPE "majority_founder" | "minority_founder" | "employee" DEFAULT "employee";
 DEFINE FIELD vesting_period_months ON employee TYPE option<int>;
 DEFINE FIELD vesting_cliff_months ON employee TYPE option<int>;
-DEFINE FIELD status ON employee TYPE "active" | "terminated" | "on_leave" DEFAULT "active";
 DEFINE FIELD created_at ON employee TYPE datetime DEFAULT time::now();
 DEFINE FIELD updated_at ON employee TYPE datetime VALUE time::now();
 
-DEFINE TABLE salary SCHEMAFULL;
-DEFINE FIELD employee ON salary TYPE record<employee>;
-DEFINE FIELD amount ON salary TYPE decimal;
-DEFINE FIELD currency ON salary TYPE string DEFAULT "EUR";
-DEFINE FIELD frequency ON salary TYPE "monthly" | "quarterly" | "annual" DEFAULT "monthly";
-DEFINE FIELD effective_from ON salary TYPE datetime;
-DEFINE FIELD effective_to ON salary TYPE option<datetime>;
-DEFINE FIELD created_at ON salary TYPE datetime DEFAULT time::now();
-
-DEFINE TABLE employment_contract SCHEMAFULL;
-DEFINE FIELD employee ON employment_contract TYPE record<employee>;
-DEFINE FIELD title ON employment_contract TYPE option<string>;
-DEFINE FIELD start_date ON employment_contract TYPE datetime;
-DEFINE FIELD end_date ON employment_contract TYPE option<datetime>;
-DEFINE FIELD document_url ON employment_contract TYPE option<string>;
-DEFINE FIELD created_at ON employment_contract TYPE datetime DEFAULT time::now();
+-- salary table REMOVED — compensation data fetched from Personio
+-- employment_contract table REMOVED — contract data fetched from Personio
 
 DEFINE TABLE job_offer SCHEMAFULL;
 DEFINE FIELD team ON job_offer TYPE option<record<team>>;
@@ -47,6 +37,7 @@ DEFINE FIELD position_title ON job_offer TYPE string;
 DEFINE FIELD offered_salary ON job_offer TYPE option<decimal>;
 DEFINE FIELD currency ON job_offer TYPE string DEFAULT "EUR";
 DEFINE FIELD status ON job_offer TYPE "draft" | "sent" | "accepted" | "declined" DEFAULT "draft";
+DEFINE FIELD personio_application_id ON job_offer TYPE option<int>;
 DEFINE FIELD created_at ON job_offer TYPE datetime DEFAULT time::now();
 
 -- ── Equity ──────────────────────────────────────────────────
@@ -147,6 +138,7 @@ DEFINE TABLE cost_center SCHEMAFULL;
 DEFINE FIELD team ON cost_center TYPE option<record<team>>;
 DEFINE FIELD name ON cost_center TYPE string;
 DEFINE FIELD owner_email ON cost_center TYPE option<string>;
+DEFINE FIELD personio_cost_center_id ON cost_center TYPE option<int>;
 DEFINE FIELD created_at ON cost_center TYPE datetime DEFAULT time::now();
 
 DEFINE TABLE budget_line SCHEMAFULL;
@@ -230,24 +222,16 @@ DEFINE FIELD current_balance ON bank_account TYPE option<decimal>;
 DEFINE FIELD last_synced_at ON bank_account TYPE option<datetime>;
 DEFINE FIELD created_at ON bank_account TYPE datetime DEFAULT time::now();
 
--- ── CRM ─────────────────────────────────────────────────────
+-- ── CRM (references to HubSpot) ────────────────────────────
 
 DEFINE TABLE lead SCHEMAFULL;
-DEFINE FIELD contact_name ON lead TYPE string;
-DEFINE FIELD contact_email ON lead TYPE option<string>;
-DEFINE FIELD company_name ON lead TYPE option<string>;
-DEFINE FIELD source ON lead TYPE option<string>;
-DEFINE FIELD status ON lead TYPE "new" | "contacted" | "qualified" | "disqualified" DEFAULT "new";
+DEFINE FIELD hubspot_contact_id ON lead TYPE option<string>;
 DEFINE FIELD notes ON lead TYPE option<string>;
 DEFINE FIELD created_at ON lead TYPE datetime DEFAULT time::now();
 
 DEFINE TABLE opportunity SCHEMAFULL;
+DEFINE FIELD hubspot_deal_id ON opportunity TYPE option<string>;
 DEFINE FIELD lead ON opportunity TYPE option<record<lead>>;
-DEFINE FIELD name ON opportunity TYPE string;
-DEFINE FIELD deal_value ON opportunity TYPE option<decimal>;
-DEFINE FIELD currency ON opportunity TYPE string DEFAULT "EUR";
-DEFINE FIELD stage ON opportunity TYPE "discovery" | "proposal" | "negotiation" | "closed_won" | "closed_lost" DEFAULT "discovery";
-DEFINE FIELD expected_close_date ON opportunity TYPE option<datetime>;
 DEFINE FIELD owner_user_id ON opportunity TYPE option<string>;
 DEFINE FIELD notes ON opportunity TYPE option<string>;
 DEFINE FIELD created_at ON opportunity TYPE datetime DEFAULT time::now();
@@ -260,10 +244,8 @@ DEFINE FIELD assessed_by ON likelihood_of_success TYPE option<string>;
 DEFINE FIELD created_at ON likelihood_of_success TYPE datetime DEFAULT time::now();
 
 DEFINE TABLE sale SCHEMAFULL;
+DEFINE FIELD hubspot_deal_id ON sale TYPE option<string>;
 DEFINE FIELD opportunity ON sale TYPE option<record<opportunity>>;
-DEFINE FIELD amount ON sale TYPE decimal;
-DEFINE FIELD currency ON sale TYPE string DEFAULT "EUR";
-DEFINE FIELD closed_at ON sale TYPE datetime DEFAULT time::now();
 DEFINE FIELD invoice_ref ON sale TYPE option<string>;
 DEFINE FIELD notes ON sale TYPE option<string>;
 DEFINE FIELD created_at ON sale TYPE datetime DEFAULT time::now();
@@ -377,13 +359,16 @@ DEFINE FIELD created_at ON proposes TYPE datetime DEFAULT time::now();
 
 DEFINE INDEX idx_employee_user_id ON employee FIELDS user_id;
 DEFINE INDEX idx_employee_team ON employee FIELDS team;
-DEFINE INDEX idx_salary_employee ON salary FIELDS employee;
+DEFINE INDEX idx_employee_personio_id ON employee FIELDS personio_employee_id UNIQUE;
 DEFINE INDEX idx_cost_center_team ON cost_center FIELDS team;
 DEFINE INDEX idx_budget_line_cc ON budget_line FIELDS cost_center;
 DEFINE INDEX idx_costs_cc ON costs FIELDS cost_center;
 DEFINE INDEX idx_variance_cc ON variance FIELDS cost_center;
 DEFINE INDEX idx_fixed_expense_cc ON fixed_expense FIELDS cost_center;
 DEFINE INDEX idx_variable_expense_cc ON variable_expense FIELDS cost_center;
+DEFINE INDEX idx_lead_hubspot_id ON lead FIELDS hubspot_contact_id UNIQUE;
 DEFINE INDEX idx_opportunity_lead ON opportunity FIELDS lead;
+DEFINE INDEX idx_opportunity_hubspot_id ON opportunity FIELDS hubspot_deal_id UNIQUE;
 DEFINE INDEX idx_sale_opportunity ON sale FIELDS opportunity;
+DEFINE INDEX idx_sale_hubspot_id ON sale FIELDS hubspot_deal_id;
 DEFINE INDEX idx_company_share_captable ON company_share FIELDS captable;

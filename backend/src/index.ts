@@ -5,7 +5,9 @@ import multer from "multer";
 import { RunState, run, type RunResult } from "@openai/agents";
 import { getSupabase } from "./lib/supabase.js";
 import { getOpenAI } from "./lib/openai.js";
+import { Table } from "surrealdb";
 import { getCompanyDB } from "./lib/surrealdb.js";
+import { isExternalTable, hydrateTable, getEmployeeCompensation } from "./lib/hydration.js";
 import { getAgent, getDefaultAgentId, listAgents } from "./lib/agents.js";
 import {
   getToolDefinition,
@@ -360,15 +362,49 @@ app.post("/api/surreal/query", async (req, res) => {
   }
 });
 
-// Get all records from a table
+// Get all records from a table (hydrates external data from Personio/HubSpot)
 app.get("/api/surreal/:table", async (req, res) => {
   try {
     const surrealDbName = await resolveCompanyDB(req);
     const db = await getCompanyDB(surrealDbName);
     try {
       const { table } = req.params;
-      const [result] = await db.query(`SELECT * FROM type::table($table)`, { table });
-      res.json({ data: result });
+      const result = await db.select(new Table(table));
+      const records = Array.isArray(result) ? result : [result].filter(Boolean);
+      const data = isExternalTable(table)
+        ? await hydrateTable(table, records)
+        : records;
+      res.json({ data });
+    } finally {
+      await db.close();
+    }
+  } catch (e) {
+    const status = (e as Error).message.includes("auth") ? 401 : 500;
+    res.status(status).json({ error: (e as Error).message });
+  }
+});
+
+// Get compensation for an employee (fetched from Personio, replaces salary table)
+app.get("/api/employees/:id/compensation", async (req, res) => {
+  try {
+    const surrealDbName = await resolveCompanyDB(req);
+    const db = await getCompanyDB(surrealDbName);
+    try {
+      const result = await db.query<[any[]]>(
+        `SELECT * FROM employee:${req.params.id}`
+      );
+      const employee = result[0]?.[0];
+      if (!employee) {
+        res.status(404).json({ error: "Employee not found" });
+        return;
+      }
+      const personioId = (employee as any).personio_employee_id;
+      if (!personioId) {
+        res.status(404).json({ error: "Employee has no Personio link" });
+        return;
+      }
+      const compensation = await getEmployeeCompensation(personioId);
+      res.json({ data: compensation });
     } finally {
       await db.close();
     }
@@ -385,10 +421,7 @@ app.post("/api/surreal/:table", async (req, res) => {
     const db = await getCompanyDB(surrealDbName);
     try {
       const { table } = req.params;
-      const [result] = await db.query(
-        `CREATE type::table($table) CONTENT $data`,
-        { table, data: req.body }
-      );
+      const result = await db.insert(new Table(table), req.body);
       res.status(201).json({ data: result });
     } finally {
       await db.close();
