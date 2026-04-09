@@ -1,0 +1,1853 @@
+{
+  "board": {
+    "id": "31l2VliXCpXV4yrAGs5Op",
+    "name": "Founders Ontology",
+    "description": "This is the german system in which a company operates. \n\nThis is why we have a notary and the documents all reference german law.",
+    "categories": [
+      {
+        "id": "Z53b0MLgkRDj2XuWMv1Ny",
+        "name": "Legal",
+        "color": "red"
+      },
+      {
+        "id": "vbs--bnddZ_MCVf_p_9js",
+        "name": "Finance",
+        "color": "amber"
+      },
+      {
+        "id": "WWrUaNyVvLFD_gaCoCSby",
+        "name": "HR",
+        "color": "purple"
+      },
+      {
+        "id": "yLe96cfF1b3pN0Gpk8LHf",
+        "name": "Ops",
+        "color": "slate"
+      },
+      {
+        "id": "YtfOrX-s842Fls4mGvbTy",
+        "name": "CRM",
+        "color": "teal"
+      },
+      {
+        "id": "yMcXv6LXtonwornUoMoN9",
+        "name": "Task",
+        "color": "pink"
+      }
+    ],
+    "layers": [],
+    "templates": []
+  },
+  "nodes": [
+    {
+      "id": "oZGkEfi9ZaFHuiJuAP45s",
+      "name": "Minority Founding Team member",
+      "description": "Founder with minority shareholding (<25%). Has limited voting rights but protected shareholder status under German law.",
+      "icon": "",
+      "position": {
+        "x": -854.1794115747274,
+        "y": 820.9994049044784
+      },
+      "categories": [
+        {
+          "id": "WWrUaNyVvLFD_gaCoCSby",
+          "name": "HR",
+          "color": "purple"
+        },
+        {
+          "id": "Z53b0MLgkRDj2XuWMv1Ny",
+          "name": "Legal",
+          "color": "red"
+        }
+      ],
+      "layerIds": [],
+      "properties": [
+        {
+          "key": "role",
+          "type": "string",
+          "value": ""
+        },
+        {
+          "key": "vesting_period_months",
+          "type": "number",
+          "value": ""
+        },
+        {
+          "key": "vesting_cliff_months",
+          "type": "number",
+          "value": ""
+        },
+        {
+          "key": "name",
+          "type": "string",
+          "value": ""
+        },
+        {
+          "key": "join_date",
+          "type": "string",
+          "value": ""
+        }
+      ],
+      "createdAt": 1775729393516,
+      "updatedAt": 1775751207685
+    },
+    {
+      "id": "oL0_gZqqzvO6x585M58gG",
+      "name": "CA Clauses",
+      "description": "Company agreement clauses. Defines specific terms and conditions within the founding document.",
+      "icon": "",
+      "position": {
+        "x": 965.585989385703,
+        "y": 248.6090118681591
+      },
+      "categories": [
+        {
+          "id": "Z53b0MLgkRDj2XuWMv1Ny",
+          "name": "Legal",
+          "color": "red"
+        }
+      ],
+      "layerIds": [],
+      "properties": [],
+      "createdAt": 1775729817752,
+      "updatedAt": 1775738334414
+    },
+    {
+      "id": "QJI_EY9D5-00vXwovoZ8W",
+      "name": "IHK Registration",
+      "description": "Chamber of Commerce (IHK) registration. Required for all German companies.",
+      "icon": "",
+      "position": {
+        "x": 903.2049418606214,
+        "y": -393.4921493783096
+      },
+      "categories": [
+        {
+          "id": "Z53b0MLgkRDj2XuWMv1Ny",
+          "name": "Legal",
+          "color": "red"
+        }
+      ],
+      "layerIds": [],
+      "properties": [],
+      "createdAt": 1775730974006,
+      "updatedAt": 1775738390054
+    },
+    {
+      "id": "fzWc2XxrjNJXEW-gO1_tV",
+      "name": "Notary appointment",
+      "description": "Notary appointment for company founding. Required for GmbH formation under German law.",
+      "icon": "alarm-clock",
+      "position": {
+        "x": 597.4899695614308,
+        "y": -396.70197142623124
+      },
+      "categories": [
+        {
+          "id": "Z53b0MLgkRDj2XuWMv1Ny",
+          "name": "Legal",
+          "color": "red"
+        }
+      ],
+      "layerIds": [],
+      "properties": [],
+      "createdAt": 1775729701431,
+      "updatedAt": 1775738386580
+    },
+    {
+      "id": "t039WmwZ03bR9CtS8o2lt",
+      "name": "SHA clauses (optional)",
+      "description": "Shareholder agreement clauses. Defines optional terms for shareholder relationships.",
+      "icon": "",
+      "position": {
+        "x": 1197.2836357465494,
+        "y": -310.742162121484
+      },
+      "categories": [
+        {
+          "id": "Z53b0MLgkRDj2XuWMv1Ny",
+          "name": "Legal",
+          "color": "red"
+        }
+      ],
+      "layerIds": [],
+      "properties": [],
+      "createdAt": 1775729830563,
+      "updatedAt": 1775738332166
+    },
+    {
+      "id": "3p_IYhjNHP5QD11r5ruCj",
+      "name": "Company share",
+      "description": "Company share ownership. Defines share count, nominal value, percentage, and shareholder.",
+      "icon": "",
+      "position": {
+        "x": -207.75640470143986,
+        "y": 793.5307243843018
+      },
+      "categories": [
+        {
+          "id": "Z53b0MLgkRDj2XuWMv1Ny",
+          "name": "Legal",
+          "color": "red"
+        }
+      ],
+      "layerIds": [],
+      "properties": [
+        {
+          "key": "share_count",
+          "type": "number",
+          "value": ""
+        },
+        {
+          "key": "nominal_value",
+          "type": "number",
+          "value": ""
+        },
+        {
+          "key": "percentage",
+          "type": "number",
+          "value": ""
+        },
+        {
+          "key": "shareholder_name",
+          "type": "string",
+          "value": ""
+        },
+        {
+          "key": "share_class",
+          "type": "enum",
+          "options": [
+            "Ordinary",
+            "Preferred",
+            "Founder"
+          ],
+          "value": ""
+        }
+      ],
+      "createdAt": 1775729425290,
+      "updatedAt": 1775738639926
+    },
+    {
+      "id": "FFVaiY5a6mklZ4WoIHKx4",
+      "name": "Bank Account",
+      "description": "Company bank account details. Defines account type, bank information, and credentials.",
+      "icon": "",
+      "position": {
+        "x": -2.7161977996635187,
+        "y": -116.94456781019812
+      },
+      "categories": [
+        {
+          "id": "vbs--bnddZ_MCVf_p_9js",
+          "name": "Finance",
+          "color": "amber"
+        }
+      ],
+      "layerIds": [],
+      "properties": [],
+      "createdAt": 1775731061119,
+      "updatedAt": 1775751855994
+    },
+    {
+      "id": "__mv_b8WeD_iwOYfKjD8h",
+      "name": "Company",
+      "description": "Interface for company entity. Defines legal structure (GmbH), registration details, and founding information. Central node connecting all operational domains.",
+      "icon": "",
+      "position": {
+        "x": 198.85226053538878,
+        "y": 441.9098735645944
+      },
+      "categories": [
+        {
+          "id": "Z53b0MLgkRDj2XuWMv1Ny",
+          "name": "Legal",
+          "color": "red"
+        }
+      ],
+      "layerIds": [],
+      "properties": [
+        {
+          "key": "legal_form",
+          "type": "enum",
+          "options": [
+            "GmbH",
+            "UG",
+            "AG",
+            "OHG",
+            "KG"
+          ],
+          "value": ""
+        },
+        {
+          "key": "registration_number",
+          "type": "string",
+          "value": ""
+        },
+        {
+          "key": "registration_court",
+          "type": "string",
+          "value": ""
+        },
+        {
+          "key": "founding_date",
+          "type": "string",
+          "value": ""
+        },
+        {
+          "key": "registration_status",
+          "type": "enum",
+          "options": [
+            "Not started",
+            "In progress",
+            "Completed"
+          ],
+          "value": ""
+        }
+      ],
+      "createdAt": 1775730867080,
+      "updatedAt": 1775750692210
+    },
+    {
+      "id": "kTOF7DuygWXgq-IzS2Weu",
+      "name": "Transparency register",
+      "description": "Transparency register entry. Documents beneficial owners of the company as required by German law.",
+      "icon": "",
+      "position": {
+        "x": 810.4450964971293,
+        "y": 489.5443472636665
+      },
+      "categories": [
+        {
+          "id": "Z53b0MLgkRDj2XuWMv1Ny",
+          "name": "Legal",
+          "color": "red"
+        }
+      ],
+      "layerIds": [],
+      "properties": [],
+      "createdAt": 1775731170227,
+      "updatedAt": 1775738393823
+    },
+    {
+      "id": "dg5cfjSHAenZYCsU87FjF",
+      "name": "Captable",
+      "description": "Capitalization table. Lists all shareholders, their share counts, and ownership percentages. Attached to and defined by the Company agreement (Gesellschaftsvertrag).",
+      "icon": "",
+      "position": {
+        "x": 397.1616416696401,
+        "y": 752.7830325349003
+      },
+      "categories": [
+        {
+          "id": "Z53b0MLgkRDj2XuWMv1Ny",
+          "name": "Legal",
+          "color": "red"
+        }
+      ],
+      "layerIds": [],
+      "properties": [
+        {
+          "key": "total_shares",
+          "type": "number",
+          "value": ""
+        },
+        {
+          "key": "shares_issued",
+          "type": "number",
+          "value": ""
+        },
+        {
+          "key": "shares_reserved",
+          "type": "number",
+          "value": ""
+        },
+        {
+          "key": "last_updated",
+          "type": "string",
+          "value": ""
+        }
+      ],
+      "createdAt": 1775729518345,
+      "updatedAt": 1775739761764
+    },
+    {
+      "id": "-kKWr_vLKOddNTAbcksZl",
+      "name": "Financial forecast",
+      "description": "Financial projections defining revenue, expense, and cash flow estimates over a forecast period.",
+      "icon": "",
+      "position": {
+        "x": -787.4084394496734,
+        "y": 34.470424866089786
+      },
+      "categories": [
+        {
+          "id": "vbs--bnddZ_MCVf_p_9js",
+          "name": "Finance",
+          "color": "amber"
+        }
+      ],
+      "layerIds": [],
+      "properties": [],
+      "createdAt": 1775730113927,
+      "updatedAt": 1775751860351
+    },
+    {
+      "id": "0PI8b4WxQngf6a0SOhUPW",
+      "name": "Majority Founding team member",
+      "description": "Founder with majority shareholding (> 25%). Has controlling voting rights and decision-making power in the company.",
+      "icon": "",
+      "position": {
+        "x": -846.2433660638379,
+        "y": 1014.4498584256116
+      },
+      "categories": [
+        {
+          "id": "WWrUaNyVvLFD_gaCoCSby",
+          "name": "HR",
+          "color": "purple"
+        },
+        {
+          "id": "Z53b0MLgkRDj2XuWMv1Ny",
+          "name": "Legal",
+          "color": "red"
+        }
+      ],
+      "layerIds": [],
+      "properties": [
+        {
+          "key": "role",
+          "type": "string",
+          "value": ""
+        },
+        {
+          "key": "vesting_period_months",
+          "type": "number",
+          "value": ""
+        },
+        {
+          "key": "vesting_cliff_months",
+          "type": "number",
+          "value": ""
+        },
+        {
+          "key": "name",
+          "type": "string",
+          "value": ""
+        },
+        {
+          "key": "join_date",
+          "type": "string",
+          "value": ""
+        }
+      ],
+      "createdAt": 1775732025389,
+      "updatedAt": 1775747827549
+    },
+    {
+      "id": "efHxg79HT3J6fa8Uty-_2",
+      "name": "Employee",
+      "description": "Employee record. Defines employment relationship, role, and compensation details. Links to salary, employment contract, and cost center for financial tracking.",
+      "icon": "",
+      "position": {
+        "x": -1301.8629414796346,
+        "y": 905.7405545560059
+      },
+      "categories": [
+        {
+          "id": "WWrUaNyVvLFD_gaCoCSby",
+          "name": "HR",
+          "color": "purple"
+        }
+      ],
+      "layerIds": [],
+      "properties": [],
+      "createdAt": 1775730771239,
+      "updatedAt": 1775750697615
+    },
+    {
+      "id": "gaIGcPJVTDHccS97ody9q",
+      "name": "Shareholder agreement (optional)",
+      "description": "Optional agreement between shareholders. Defines vesting, exit clauses, and decision-making rules.",
+      "icon": "",
+      "position": {
+        "x": 796.8776458685181,
+        "y": -201.31621094853537
+      },
+      "categories": [
+        {
+          "id": "Z53b0MLgkRDj2XuWMv1Ny",
+          "name": "Legal",
+          "color": "red"
+        }
+      ],
+      "layerIds": [],
+      "properties": [],
+      "createdAt": 1775729537357,
+      "updatedAt": 1775738326937
+    },
+    {
+      "id": "bpZ6M5Le8j_Qs3XtYJrxn",
+      "name": "Runway calculation",
+      "description": "Cash runway analysis. Defines months of operation remaining based on burn rate and cash on hand.",
+      "icon": "",
+      "position": {
+        "x": -317.0279877722632,
+        "y": 46.80805176326231
+      },
+      "categories": [
+        {
+          "id": "vbs--bnddZ_MCVf_p_9js",
+          "name": "Finance",
+          "color": "amber"
+        }
+      ],
+      "layerIds": [],
+      "properties": [],
+      "createdAt": 1775731617103,
+      "updatedAt": 1775747683046
+    },
+    {
+      "id": "GDJmPMsO4kFiAgMB8u80e",
+      "name": "Opportunities",
+      "description": "Qualified leads with potential business value. Tracks deal stage and value.",
+      "icon": "",
+      "position": {
+        "x": -1492.2352799852238,
+        "y": -326.80143588109223
+      },
+      "categories": [
+        {
+          "id": "YtfOrX-s842Fls4mGvbTy",
+          "name": "CRM",
+          "color": "teal"
+        }
+      ],
+      "layerIds": [],
+      "properties": [],
+      "createdAt": 1775731432567,
+      "updatedAt": 1775754141563
+    },
+    {
+      "id": "BCkUPvUPpUhJE6I8sc8Rl",
+      "name": "Leads",
+      "description": "Potential customer contacts. Tracks inbound interest and lead sources.",
+      "icon": "",
+      "position": {
+        "x": -1809.7861591579313,
+        "y": -513.7466746295853
+      },
+      "categories": [
+        {
+          "id": "YtfOrX-s842Fls4mGvbTy",
+          "name": "CRM",
+          "color": "teal"
+        }
+      ],
+      "layerIds": [],
+      "properties": [],
+      "createdAt": 1775731438210,
+      "updatedAt": 1775754036303
+    },
+    {
+      "id": "OEMVEZuj5xjtfsjBBte9l",
+      "name": "Sales",
+      "description": "Closed deals and revenue-generating transactions.",
+      "icon": "",
+      "position": {
+        "x": -1155.8441637718672,
+        "y": -196.21241919848643
+      },
+      "categories": [
+        {
+          "id": "YtfOrX-s842Fls4mGvbTy",
+          "name": "CRM",
+          "color": "teal"
+        },
+        {
+          "id": "vbs--bnddZ_MCVf_p_9js",
+          "name": "Finance",
+          "color": "amber"
+        }
+      ],
+      "layerIds": [],
+      "properties": [],
+      "createdAt": 1775731406372,
+      "updatedAt": 1775754143955
+    },
+    {
+      "id": "sSFdbpBfwJEpZ5Y2R5GD9",
+      "name": "Share capital",
+      "description": "Share capital (Stammkapital). Defines the minimum capital required for GmbH formation under German law.",
+      "icon": "",
+      "position": {
+        "x": -254.4841522453595,
+        "y": 234.8505659584149
+      },
+      "categories": [
+        {
+          "id": "vbs--bnddZ_MCVf_p_9js",
+          "name": "Finance",
+          "color": "amber"
+        },
+        {
+          "id": "Z53b0MLgkRDj2XuWMv1Ny",
+          "name": "Legal",
+          "color": "red"
+        }
+      ],
+      "layerIds": [],
+      "properties": [
+        {
+          "key": "amount",
+          "type": "number",
+          "value": ""
+        },
+        {
+          "key": "currency",
+          "type": "string",
+          "value": ""
+        },
+        {
+          "key": "minimum_required",
+          "type": "boolean",
+          "value": ""
+        },
+        {
+          "key": "paid_in",
+          "type": "boolean",
+          "value": ""
+        }
+      ],
+      "createdAt": 1775730040486,
+      "updatedAt": 1775745574659
+    },
+    {
+      "id": "csKWEZId2hJnBb9tmI-o9",
+      "name": "Sales prognosis",
+      "description": "Projected sales figures based on pipeline and conversion rates.",
+      "icon": "",
+      "position": {
+        "x": -1073.4978568346269,
+        "y": -589.8980125514436
+      },
+      "categories": [
+        {
+          "id": "YtfOrX-s842Fls4mGvbTy",
+          "name": "CRM",
+          "color": "teal"
+        }
+      ],
+      "layerIds": [],
+      "properties": [],
+      "createdAt": 1775731510330,
+      "updatedAt": 1775754040755
+    },
+    {
+      "id": "4KEXFuRCncrKfACGksvGB",
+      "name": "Employment contract",
+      "description": "Employee employment agreement. Defines role, compensation, working conditions, and termination terms.",
+      "icon": "",
+      "position": {
+        "x": -1667.0952228834924,
+        "y": 762.6135431259269
+      },
+      "categories": [
+        {
+          "id": "Z53b0MLgkRDj2XuWMv1Ny",
+          "name": "Legal",
+          "color": "red"
+        },
+        {
+          "id": "WWrUaNyVvLFD_gaCoCSby",
+          "name": "HR",
+          "color": "purple"
+        }
+      ],
+      "layerIds": [],
+      "properties": [],
+      "createdAt": 1775732604276,
+      "updatedAt": 1775747785919
+    },
+    {
+      "id": "JF3ewBvBEAYNfzazeugUM",
+      "name": "Salary",
+      "description": "Employee or founder compensation. Defines amount, frequency, and tax treatment. Tracked as expense in financial forecast and budget planning.",
+      "icon": "",
+      "position": {
+        "x": -1295.5732727378863,
+        "y": 631.8394766554607
+      },
+      "categories": [
+        {
+          "id": "vbs--bnddZ_MCVf_p_9js",
+          "name": "Finance",
+          "color": "amber"
+        },
+        {
+          "id": "WWrUaNyVvLFD_gaCoCSby",
+          "name": "HR",
+          "color": "purple"
+        }
+      ],
+      "layerIds": [],
+      "properties": [],
+      "createdAt": 1775730140068,
+      "updatedAt": 1775750697615
+    },
+    {
+      "id": "MQS5Y4fB7lYmOXG_BgLqF",
+      "name": "Team",
+      "description": "Interface for team structure. Defines organizational context. Individual team members (founders, employees, contractors) are represented as connected nodes.",
+      "icon": "",
+      "position": {
+        "x": -1243.4296877923332,
+        "y": 1184.6439955352657
+      },
+      "categories": [
+        {
+          "id": "WWrUaNyVvLFD_gaCoCSby",
+          "name": "HR",
+          "color": "purple"
+        }
+      ],
+      "layerIds": [],
+      "properties": [
+        {
+          "key": "department",
+          "type": "string",
+          "value": ""
+        },
+        {
+          "key": "location",
+          "type": "string",
+          "value": ""
+        }
+      ],
+      "createdAt": 1775729377934,
+      "updatedAt": 1775747780576
+    },
+    {
+      "id": "rNTJxQnr0_XqUR6wo4LLW",
+      "name": "Company agreement",
+      "description": "Company founding document (Gesellschaftsvertrag). Defines legal structure, shareholder rights, and company rules.",
+      "icon": "",
+      "position": {
+        "x": 793.8940686797567,
+        "y": 40.88246448319156
+      },
+      "categories": [
+        {
+          "id": "Z53b0MLgkRDj2XuWMv1Ny",
+          "name": "Legal",
+          "color": "red"
+        }
+      ],
+      "layerIds": [],
+      "properties": [],
+      "createdAt": 1775729602739,
+      "updatedAt": 1775738316479
+    },
+    {
+      "id": "5B4HQAQby9tIjn_F3f9Lj",
+      "name": "Advanced VAT return registration",
+      "description": "Advanced VAT return registration. Defines filing frequency and registration status with tax office.",
+      "icon": "",
+      "position": {
+        "x": 97.42451076100897,
+        "y": -562.0401333592976
+      },
+      "categories": [
+        {
+          "id": "Z53b0MLgkRDj2XuWMv1Ny",
+          "name": "Legal",
+          "color": "red"
+        },
+        {
+          "id": "vbs--bnddZ_MCVf_p_9js",
+          "name": "Finance",
+          "color": "amber"
+        }
+      ],
+      "layerIds": [],
+      "properties": [],
+      "createdAt": 1775732976523,
+      "updatedAt": 1775738657123
+    },
+    {
+      "id": "nDSHSE8lberCgaINQM5De",
+      "name": "Official Founding",
+      "description": "Official company founding event. Connects all founding-related documents, registrations, and legal steps.",
+      "icon": "",
+      "position": {
+        "x": 470.67953204811215,
+        "y": 171.40170081372173
+      },
+      "categories": [
+        {
+          "id": "Z53b0MLgkRDj2XuWMv1Ny",
+          "name": "Legal",
+          "color": "red"
+        }
+      ],
+      "layerIds": [],
+      "properties": [],
+      "createdAt": 1775729691202,
+      "updatedAt": 1775738371087
+    },
+    {
+      "id": "8f3cG5lcJ7Ow_sUGAoOV6",
+      "name": "Job offer",
+      "description": "Employment offer document. Defines position, salary, start date, and conditions.",
+      "icon": "",
+      "position": {
+        "x": -1703.514701962936,
+        "y": 1120.124474402899
+      },
+      "categories": [
+        {
+          "id": "WWrUaNyVvLFD_gaCoCSby",
+          "name": "HR",
+          "color": "purple"
+        }
+      ],
+      "layerIds": [],
+      "properties": [],
+      "createdAt": 1775732583226,
+      "updatedAt": 1775747782057
+    },
+    {
+      "id": "KpRdpv-lJbisqIA-o1u03",
+      "name": "Tax Office Account",
+      "description": "Tax office account details. Stores tax number, VAT ID, and registration status.",
+      "icon": "",
+      "position": {
+        "x": 300.44018256979075,
+        "y": -378.8964605034836
+      },
+      "categories": [
+        {
+          "id": "Z53b0MLgkRDj2XuWMv1Ny",
+          "name": "Legal",
+          "color": "red"
+        }
+      ],
+      "layerIds": [],
+      "properties": [
+        {
+          "key": "",
+          "type": "string",
+          "value": ""
+        }
+      ],
+      "createdAt": 1775732932074,
+      "updatedAt": 1775738382976
+    },
+    {
+      "id": "Tp0b-6obJUvOpY_vc1-Q8",
+      "name": "Likelyhood of success",
+      "description": "Probability assessment for opportunities closing. Based on deal stage, customer fit, and historical conversion rates. Informs sales prognosis accuracy.",
+      "icon": "",
+      "position": {
+        "x": -1484.5871474776475,
+        "y": -575.32483971038
+      },
+      "categories": [
+        {
+          "id": "YtfOrX-s842Fls4mGvbTy",
+          "name": "CRM",
+          "color": "teal"
+        }
+      ],
+      "layerIds": [],
+      "properties": [],
+      "createdAt": 1775747336277,
+      "updatedAt": 1775754122601
+    },
+    {
+      "id": "v94vG0kRHYAk14UfdW2UR",
+      "name": "Budget line",
+      "description": "Planned expenditure for a specific cost center, category, and month. The 'plan' side of budget-vs-actual tracking.",
+      "icon": "",
+      "position": {
+        "x": -1433.4839509474316,
+        "y": -2.9309508301993645
+      },
+      "categories": [
+        {
+          "id": "vbs--bnddZ_MCVf_p_9js",
+          "name": "Finance",
+          "color": "amber"
+        }
+      ],
+      "layerIds": [],
+      "properties": [
+        {
+          "key": "category",
+          "type": "string",
+          "value": ""
+        },
+        {
+          "key": "month",
+          "type": "string",
+          "value": ""
+        },
+        {
+          "key": "planned_amount",
+          "type": "number",
+          "value": ""
+        },
+        {
+          "key": "currency",
+          "type": "string",
+          "value": ""
+        }
+      ],
+      "createdAt": 1775747604047,
+      "updatedAt": 1775750511763
+    },
+    {
+      "id": "_Os_PpxE4iQzHlitCuWVp",
+      "name": "Costs",
+      "description": "Actual expenditure recorded from source systems (Personio, HubSpot, manual). The 'actual' side of budget-vs-actual tracking.",
+      "icon": "",
+      "position": {
+        "x": -660.1229114132586,
+        "y": 291.5817068149744
+      },
+      "categories": [
+        {
+          "id": "vbs--bnddZ_MCVf_p_9js",
+          "name": "Finance",
+          "color": "amber"
+        }
+      ],
+      "layerIds": [],
+      "properties": [
+        {
+          "key": "category",
+          "type": "string",
+          "value": ""
+        },
+        {
+          "key": "month",
+          "type": "string",
+          "value": ""
+        },
+        {
+          "key": "actual_amount",
+          "type": "number",
+          "value": ""
+        },
+        {
+          "key": "source",
+          "type": "enum",
+          "options": [
+            "personio",
+            "hubspot",
+            "manual"
+          ],
+          "value": ""
+        },
+        {
+          "key": "source_ref",
+          "type": "string",
+          "value": ""
+        },
+        {
+          "key": "description",
+          "type": "string",
+          "value": ""
+        }
+      ],
+      "createdAt": 1775747767518,
+      "updatedAt": 1775750738796
+    },
+    {
+      "id": "ctr_CostCenter_001",
+      "name": "Cost Center",
+      "description": "Financial grouping for budget ownership. Maps to teams but exists independently for non-personnel costs (Cloud, Software, Office, Marketing). Enables granular budget-vs-actual tracking.",
+      "icon": "",
+      "position": {
+        "x": -757.8851137756672,
+        "y": 579.4280541151788
+      },
+      "categories": [
+        {
+          "id": "vbs--bnddZ_MCVf_p_9js",
+          "name": "Finance",
+          "color": "amber"
+        },
+        {
+          "id": "yLe96cfF1b3pN0Gpk8LHf",
+          "name": "Ops",
+          "color": "slate"
+        }
+      ],
+      "layerIds": [],
+      "properties": [
+        {
+          "key": "name",
+          "type": "string",
+          "value": ""
+        },
+        {
+          "key": "owner_email",
+          "type": "string",
+          "value": ""
+        }
+      ],
+      "createdAt": 1775748000000,
+      "updatedAt": 1775750697615
+    },
+    {
+      "id": "var_Variance_001",
+      "name": "Variance",
+      "description": "Computed difference between planned budget and actual spend/revenue for a given cost center, category, and month. Drives the agent's explanation loop: flagged → explained → accepted.",
+      "icon": "",
+      "position": {
+        "x": -1913.769659572882,
+        "y": 300.7473284366162
+      },
+      "categories": [
+        {
+          "id": "vbs--bnddZ_MCVf_p_9js",
+          "name": "Finance",
+          "color": "amber"
+        }
+      ],
+      "layerIds": [],
+      "properties": [
+        {
+          "key": "month",
+          "type": "string",
+          "value": ""
+        },
+        {
+          "key": "planned_amount",
+          "type": "number",
+          "value": ""
+        },
+        {
+          "key": "actual_amount",
+          "type": "number",
+          "value": ""
+        },
+        {
+          "key": "variance_pct",
+          "type": "number",
+          "value": ""
+        },
+        {
+          "key": "status",
+          "type": "enum",
+          "options": [
+            "ok",
+            "flagged",
+            "explained",
+            "accepted"
+          ],
+          "value": ""
+        },
+        {
+          "key": "explanation",
+          "type": "string",
+          "value": ""
+        }
+      ],
+      "createdAt": 1775748000000,
+      "updatedAt": 1775750506101
+    },
+    {
+      "id": "exp_Fixed_001",
+      "name": "Fixed expense",
+      "description": "A cost driven by a decision — rent, salaries, subscriptions, retainers, insurance. Generates predictable, recurring cost line items. The agent forecasts by rolling forward unless it knows about a change (contract end, price increase, cancellation). When a variance appears on a fixed expense, something went wrong.",
+      "icon": "",
+      "position": {
+        "x": -1770.366031180069,
+        "y": 504.4839706196975
+      },
+      "categories": [
+        {
+          "id": "vbs--bnddZ_MCVf_p_9js",
+          "name": "Finance",
+          "color": "amber"
+        },
+        {
+          "id": "yLe96cfF1b3pN0Gpk8LHf",
+          "name": "Ops",
+          "color": "slate"
+        }
+      ],
+      "layerIds": [],
+      "properties": [
+        {
+          "key": "name",
+          "type": "string",
+          "value": ""
+        },
+        {
+          "key": "amount",
+          "type": "number",
+          "value": ""
+        },
+        {
+          "key": "currency",
+          "type": "string",
+          "value": ""
+        },
+        {
+          "key": "frequency",
+          "type": "enum",
+          "options": [
+            "monthly",
+            "quarterly",
+            "annual"
+          ],
+          "value": ""
+        },
+        {
+          "key": "start_date",
+          "type": "string",
+          "value": ""
+        },
+        {
+          "key": "end_date",
+          "type": "string",
+          "value": ""
+        },
+        {
+          "key": "auto_renews",
+          "type": "boolean",
+          "value": ""
+        },
+        {
+          "key": "cancellation_notice_days",
+          "type": "number",
+          "value": ""
+        },
+        {
+          "key": "source_system",
+          "type": "string",
+          "value": ""
+        }
+      ],
+      "createdAt": 1775751000000,
+      "updatedAt": 1775751000000
+    },
+    {
+      "id": "exp_Variable_001",
+      "name": "Variable expense",
+      "description": "A cost driven by activity — token usage, cloud compute, sales commissions, ad spend, transaction fees. Generates unpredictable cost line items that scale with a driver. The agent forecasts by understanding what drives it and projecting that driver forward. When a variance appears on a variable expense, something happened in the business — and that might be fine.",
+      "icon": "",
+      "position": {
+        "x": -1879.869298062856,
+        "y": -100.16918511608148
+      },
+      "categories": [
+        {
+          "id": "vbs--bnddZ_MCVf_p_9js",
+          "name": "Finance",
+          "color": "amber"
+        },
+        {
+          "id": "yLe96cfF1b3pN0Gpk8LHf",
+          "name": "Ops",
+          "color": "slate"
+        }
+      ],
+      "layerIds": [],
+      "properties": [
+        {
+          "key": "name",
+          "type": "string",
+          "value": ""
+        },
+        {
+          "key": "unit_price",
+          "type": "number",
+          "value": ""
+        },
+        {
+          "key": "currency",
+          "type": "string",
+          "value": ""
+        },
+        {
+          "key": "driver",
+          "type": "string",
+          "value": ""
+        },
+        {
+          "key": "driver_metric",
+          "type": "enum",
+          "options": [
+            "tokens",
+            "compute_hours",
+            "api_calls",
+            "storage_gb",
+            "seats",
+            "deals_closed",
+            "clicks",
+            "transactions"
+          ],
+          "value": ""
+        },
+        {
+          "key": "source_system",
+          "type": "string",
+          "value": ""
+        },
+        {
+          "key": "last_month_quantity",
+          "type": "number",
+          "value": ""
+        },
+        {
+          "key": "trend_pct",
+          "type": "number",
+          "value": ""
+        }
+      ],
+      "createdAt": 1775751000000,
+      "updatedAt": 1775751509504
+    },
+    {
+      "id": "_i-hoLGHUUmiOK0grjM3Y",
+      "name": "Revenue",
+      "description": "Realized revenue from closed deals, invoices, and bank deposits. Used for accounting, tax reporting, and variance analysis.",
+      "icon": "",
+      "position": {
+        "x": -432.19859566671204,
+        "y": -444.361942416096
+      },
+      "categories": [
+        {
+          "id": "vbs--bnddZ_MCVf_p_9js",
+          "name": "Finance",
+          "color": "amber"
+        },
+        {
+          "id": "YtfOrX-s842Fls4mGvbTy",
+          "name": "CRM",
+          "color": "teal"
+        }
+      ],
+      "layerIds": [],
+      "properties": [],
+      "createdAt": 1775755012096,
+      "updatedAt": 1775755242517
+    },
+    {
+      "id": "2WNSrCSgrW1WV_CZa5A2L",
+      "name": "Revenue Forecast",
+      "description": "Forecasted revenue figures based on sales pipeline, conversion rates, and financial models. Used for planning and budget comparisons.",
+      "icon": "",
+      "position": {
+        "x": -459.75419726742797,
+        "y": -213.14032641817644
+      },
+      "categories": [
+        {
+          "id": "vbs--bnddZ_MCVf_p_9js",
+          "name": "Finance",
+          "color": "amber"
+        },
+        {
+          "id": "YtfOrX-s842Fls4mGvbTy",
+          "name": "CRM",
+          "color": "teal"
+        }
+      ],
+      "layerIds": [],
+      "properties": [],
+      "createdAt": 1775755017273,
+      "updatedAt": 1775755242518
+    }
+  ],
+  "edges": [
+    {
+      "id": "mz5dsZ7ceOn1vwEOuGKTv",
+      "source": "rNTJxQnr0_XqUR6wo4LLW",
+      "target": "dg5cfjSHAenZYCsU87FjF",
+      "label": "contains",
+      "createdAt": 1775729621069,
+      "updatedAt": 1775739760344
+    },
+    {
+      "id": "S-FBihg0XwEWzo63lN5gp",
+      "source": "3p_IYhjNHP5QD11r5ruCj",
+      "target": "dg5cfjSHAenZYCsU87FjF",
+      "label": "populates",
+      "createdAt": 1775729624849,
+      "updatedAt": 1775739765747
+    },
+    {
+      "id": "IylV6blnQRKB-_nL8m_LS",
+      "source": "nDSHSE8lberCgaINQM5De",
+      "target": "rNTJxQnr0_XqUR6wo4LLW",
+      "label": "requires",
+      "createdAt": 1775729707243,
+      "updatedAt": 1775739080695
+    },
+    {
+      "id": "_E1w4lFpjmv57x3ZzKdWm",
+      "source": "nDSHSE8lberCgaINQM5De",
+      "target": "gaIGcPJVTDHccS97ody9q",
+      "label": "may include",
+      "createdAt": 1775729708324,
+      "updatedAt": 1775739081527
+    },
+    {
+      "id": "C5t5QaGdaiDB11slSCM-P",
+      "source": "nDSHSE8lberCgaINQM5De",
+      "target": "fzWc2XxrjNJXEW-gO1_tV",
+      "label": "requires",
+      "createdAt": 1775729709349,
+      "updatedAt": 1775739082190
+    },
+    {
+      "id": "PUtmQ_lWRE1Mow36a4LWv",
+      "source": "MQS5Y4fB7lYmOXG_BgLqF",
+      "target": "oZGkEfi9ZaFHuiJuAP45s",
+      "label": "has member",
+      "createdAt": 1775729782010,
+      "updatedAt": 1775739163811
+    },
+    {
+      "id": "mnHJBr7LUMA-moI4xbsDQ",
+      "source": "oZGkEfi9ZaFHuiJuAP45s",
+      "target": "3p_IYhjNHP5QD11r5ruCj",
+      "label": "owns",
+      "createdAt": 1775729784098,
+      "updatedAt": 1775739304866
+    },
+    {
+      "id": "IzOC1wVPvwUPL6qpP9OIc",
+      "source": "gaIGcPJVTDHccS97ody9q",
+      "target": "t039WmwZ03bR9CtS8o2lt",
+      "label": "defines",
+      "createdAt": 1775729846345,
+      "updatedAt": 1775739823458
+    },
+    {
+      "id": "uGMI9-Et74bfZlz9-V5Rs",
+      "source": "rNTJxQnr0_XqUR6wo4LLW",
+      "target": "oL0_gZqqzvO6x585M58gG",
+      "label": "defines",
+      "createdAt": 1775729848189,
+      "updatedAt": 1775739833259
+    },
+    {
+      "id": "pASj_UuGzHmut9ndW15vT",
+      "source": "3p_IYhjNHP5QD11r5ruCj",
+      "target": "sSFdbpBfwJEpZ5Y2R5GD9",
+      "label": "contributes to",
+      "createdAt": 1775730063646,
+      "updatedAt": 1775739653487
+    },
+    {
+      "id": "TCq71nzD7he03Efa2SOMg",
+      "source": "sSFdbpBfwJEpZ5Y2R5GD9",
+      "target": "-kKWr_vLKOddNTAbcksZl",
+      "label": "informs",
+      "createdAt": 1775730131444,
+      "updatedAt": 1775739662136
+    },
+    {
+      "id": "2q9lqD9CUv5XIy9LUoM08",
+      "source": "oZGkEfi9ZaFHuiJuAP45s",
+      "target": "JF3ewBvBEAYNfzazeugUM",
+      "label": "receives",
+      "createdAt": 1775730149486,
+      "updatedAt": 1775740083886
+    },
+    {
+      "id": "yJhOHZqaHpkXKTXYeOtn3",
+      "source": "oZGkEfi9ZaFHuiJuAP45s",
+      "target": "efHxg79HT3J6fa8Uty-_2",
+      "label": "has employment",
+      "createdAt": 1775730802795,
+      "updatedAt": 1775739292747
+    },
+    {
+      "id": "pSoAIQTqcf7T0rNCzmHSH",
+      "source": "efHxg79HT3J6fa8Uty-_2",
+      "target": "JF3ewBvBEAYNfzazeugUM",
+      "label": "",
+      "createdAt": 1775730804013,
+      "updatedAt": 1775730804013
+    },
+    {
+      "id": "FM1SF3ByfUZnRb6FozH_n",
+      "source": "MQS5Y4fB7lYmOXG_BgLqF",
+      "target": "efHxg79HT3J6fa8Uty-_2",
+      "label": "has member",
+      "createdAt": 1775730807501,
+      "updatedAt": 1775739172774
+    },
+    {
+      "id": "7uu11URehAliASwbyufZG",
+      "source": "__mv_b8WeD_iwOYfKjD8h",
+      "target": "nDSHSE8lberCgaINQM5De",
+      "label": "is founded by",
+      "createdAt": 1775730932989,
+      "updatedAt": 1775739079329
+    },
+    {
+      "id": "Hoi2oAUxneQjznF9UznKR",
+      "source": "__mv_b8WeD_iwOYfKjD8h",
+      "target": "dg5cfjSHAenZYCsU87FjF",
+      "label": "tracks",
+      "createdAt": 1775730935863,
+      "updatedAt": 1775739762980
+    },
+    {
+      "id": "umwykCQIS-fZ4DN6RSMdR",
+      "source": "fzWc2XxrjNJXEW-gO1_tV",
+      "target": "QJI_EY9D5-00vXwovoZ8W",
+      "label": "requires",
+      "createdAt": 1775730980111,
+      "updatedAt": 1775740524641
+    },
+    {
+      "id": "DG_0A-UJCxUnHRSXDiv7B",
+      "source": "csKWEZId2hJnBb9tmI-o9",
+      "target": "-kKWr_vLKOddNTAbcksZl",
+      "label": "informs",
+      "createdAt": 1775731541266,
+      "updatedAt": 1775740539331
+    },
+    {
+      "id": "GsJP5iG1TeRJuuNkEskce",
+      "source": "kTOF7DuygWXgq-IzS2Weu",
+      "target": "nDSHSE8lberCgaINQM5De",
+      "label": "documents",
+      "createdAt": 1775731176300,
+      "updatedAt": 1775740527441
+    },
+    {
+      "id": "2ADJQAmVk_mSf1b7CbwqX",
+      "source": "BCkUPvUPpUhJE6I8sc8Rl",
+      "target": "GDJmPMsO4kFiAgMB8u80e",
+      "label": "converts to",
+      "createdAt": 1775731529958,
+      "updatedAt": 1775740537951
+    },
+    {
+      "id": "Yz3GsqLkTc5GMVtIpnBue",
+      "source": "GDJmPMsO4kFiAgMB8u80e",
+      "target": "OEMVEZuj5xjtfsjBBte9l",
+      "label": "closes as",
+      "createdAt": 1775731530981,
+      "updatedAt": 1775740537342
+    },
+    {
+      "id": "sosNN3Fotnaa9XauUF9bA",
+      "source": "GDJmPMsO4kFiAgMB8u80e",
+      "target": "csKWEZId2hJnBb9tmI-o9",
+      "label": "informs",
+      "createdAt": 1775731537920,
+      "updatedAt": 1775740535799
+    },
+    {
+      "id": "4tbv8pC_g1FfjFfGiYlmM",
+      "source": "-kKWr_vLKOddNTAbcksZl",
+      "target": "bpZ6M5Le8j_Qs3XtYJrxn",
+      "label": "informs",
+      "createdAt": 1775731630030,
+      "updatedAt": 1775740532697
+    },
+    {
+      "id": "nDW5GAyEZwqN7AqvZhRVs",
+      "source": "bpZ6M5Le8j_Qs3XtYJrxn",
+      "target": "FFVaiY5a6mklZ4WoIHKx4",
+      "label": "uses",
+      "createdAt": 1775731630996,
+      "updatedAt": 1775740531132
+    },
+    {
+      "id": "HOIcjkJ9j-6DiUp94y310",
+      "source": "MQS5Y4fB7lYmOXG_BgLqF",
+      "target": "0PI8b4WxQngf6a0SOhUPW",
+      "label": "has member",
+      "createdAt": 1775732049191,
+      "updatedAt": 1775739162738
+    },
+    {
+      "id": "bBrPHnbMRu65KmMfxX8l9",
+      "source": "0PI8b4WxQngf6a0SOhUPW",
+      "target": "3p_IYhjNHP5QD11r5ruCj",
+      "label": "owns",
+      "createdAt": 1775732050705,
+      "updatedAt": 1775739305840
+    },
+    {
+      "id": "UV7E62IwXsLErF9c0N6xS",
+      "source": "8f3cG5lcJ7Ow_sUGAoOV6",
+      "target": "efHxg79HT3J6fa8Uty-_2",
+      "label": "creates",
+      "createdAt": 1775732608781,
+      "updatedAt": 1775740080974
+    },
+    {
+      "id": "ZVsONX6ackGnb7Jk2gkFH",
+      "source": "4KEXFuRCncrKfACGksvGB",
+      "target": "efHxg79HT3J6fa8Uty-_2",
+      "label": "defines",
+      "createdAt": 1775732610405,
+      "updatedAt": 1775740080291
+    },
+    {
+      "id": "cLBTQdEOlAD0cd8iaWt20",
+      "source": "fzWc2XxrjNJXEW-gO1_tV",
+      "target": "gaIGcPJVTDHccS97ody9q",
+      "label": "may include",
+      "createdAt": 1775732822195,
+      "updatedAt": 1775740033726
+    },
+    {
+      "id": "x9s9QIWslFfMmVmty4Yy3",
+      "source": "5B4HQAQby9tIjn_F3f9Lj",
+      "target": "KpRdpv-lJbisqIA-o1u03",
+      "label": "links to",
+      "createdAt": 1775733066301,
+      "updatedAt": 1775740193125
+    },
+    {
+      "id": "0vCyi5xl5SOcEtRZ66--_",
+      "source": "efHxg79HT3J6fa8Uty-_2",
+      "target": "0PI8b4WxQngf6a0SOhUPW",
+      "label": "has employment",
+      "createdAt": 1775739183536,
+      "updatedAt": 1775739291764
+    },
+    {
+      "id": "_zWYIuUiMcqEqoREo0jAB",
+      "source": "fzWc2XxrjNJXEW-gO1_tV",
+      "target": "FFVaiY5a6mklZ4WoIHKx4",
+      "label": "enables",
+      "createdAt": 1775745555174,
+      "updatedAt": 1775745555174
+    },
+    {
+      "id": "djzPANT-1MJbhsmM3xH5v",
+      "source": "nDSHSE8lberCgaINQM5De",
+      "target": "KpRdpv-lJbisqIA-o1u03",
+      "label": "triggers",
+      "createdAt": 1775745555175,
+      "updatedAt": 1775745555175
+    },
+    {
+      "id": "aU7mtSY-Q3ICGERDk4J88",
+      "source": "KpRdpv-lJbisqIA-o1u03",
+      "target": "5B4HQAQby9tIjn_F3f9Lj",
+      "label": "enables",
+      "createdAt": 1775745555175,
+      "updatedAt": 1775745555175
+    },
+    {
+      "id": "G4tJUiZ5BqMvfwf-cUYV-",
+      "source": "sSFdbpBfwJEpZ5Y2R5GD9",
+      "target": "nDSHSE8lberCgaINQM5De",
+      "label": "completes",
+      "createdAt": 1775745555175,
+      "updatedAt": 1775745555175
+    },
+    {
+      "id": "oVdpq_wIwOwm3CxpateNO",
+      "source": "GDJmPMsO4kFiAgMB8u80e",
+      "target": "Tp0b-6obJUvOpY_vc1-Q8",
+      "label": "",
+      "createdAt": 1775747348917,
+      "updatedAt": 1775747348917
+    },
+    {
+      "id": "snFFSMIphc4nsuMlMstZs",
+      "source": "Tp0b-6obJUvOpY_vc1-Q8",
+      "target": "csKWEZId2hJnBb9tmI-o9",
+      "label": "",
+      "createdAt": 1775747350593,
+      "updatedAt": 1775747350593
+    },
+    {
+      "id": "1a8aLgaSg_u2OEhLFdJGs",
+      "source": "JF3ewBvBEAYNfzazeugUM",
+      "target": "0PI8b4WxQngf6a0SOhUPW",
+      "label": "",
+      "createdAt": 1775747806790,
+      "updatedAt": 1775747806790
+    },
+    {
+      "id": "edge_team_to_costcenter",
+      "source": "MQS5Y4fB7lYmOXG_BgLqF",
+      "target": "ctr_CostCenter_001",
+      "label": "maps to",
+      "createdAt": 1775748000000,
+      "updatedAt": 1775748000000
+    },
+    {
+      "id": "edge_costcenter_to_budgetline",
+      "source": "ctr_CostCenter_001",
+      "target": "v94vG0kRHYAk14UfdW2UR",
+      "label": "owns",
+      "createdAt": 1775748000000,
+      "updatedAt": 1775748000000
+    },
+    {
+      "id": "edge_costcenter_to_costs",
+      "source": "ctr_CostCenter_001",
+      "target": "_Os_PpxE4iQzHlitCuWVp",
+      "label": "incurs",
+      "createdAt": 1775748000000,
+      "updatedAt": 1775748000000
+    },
+    {
+      "id": "edge_budgetline_to_variance",
+      "source": "v94vG0kRHYAk14UfdW2UR",
+      "target": "var_Variance_001",
+      "label": "planned input",
+      "createdAt": 1775748000000,
+      "updatedAt": 1775748000000
+    },
+    {
+      "id": "edge_costs_to_variance",
+      "source": "_Os_PpxE4iQzHlitCuWVp",
+      "target": "var_Variance_001",
+      "label": "actual input",
+      "createdAt": 1775748000000,
+      "updatedAt": 1775748000000
+    },
+    {
+      "id": "edge_variance_to_forecast",
+      "source": "var_Variance_001",
+      "target": "-kKWr_vLKOddNTAbcksZl",
+      "label": "informs",
+      "createdAt": 1775748000000,
+      "updatedAt": 1775748000000
+    },
+    {
+      "id": "edge_variance_to_runway",
+      "source": "var_Variance_001",
+      "target": "bpZ6M5Le8j_Qs3XtYJrxn",
+      "label": "affects",
+      "createdAt": 1775748000000,
+      "updatedAt": 1775748000000
+    },
+    {
+      "id": "edge_costcenter_to_variance",
+      "source": "ctr_CostCenter_001",
+      "target": "var_Variance_001",
+      "label": "scopes",
+      "createdAt": 1775748000000,
+      "updatedAt": 1775748000000
+    },
+    {
+      "id": "edge_costs_to_forecast",
+      "source": "_Os_PpxE4iQzHlitCuWVp",
+      "target": "-kKWr_vLKOddNTAbcksZl",
+      "label": "establishes baseline",
+      "createdAt": 1775749000000,
+      "updatedAt": 1775749000000
+    },
+    {
+      "id": "eVfjLVXNovUFiJ_Z4WVh4",
+      "source": "OEMVEZuj5xjtfsjBBte9l",
+      "target": "-kKWr_vLKOddNTAbcksZl",
+      "label": "updates",
+      "createdAt": 1775750699029,
+      "updatedAt": 1775750699029
+    },
+    {
+      "id": "1BzfhhkFcE0ozyCxPHQvM",
+      "source": "_Os_PpxE4iQzHlitCuWVp",
+      "target": "bpZ6M5Le8j_Qs3XtYJrxn",
+      "label": "affects",
+      "createdAt": 1775750699030,
+      "updatedAt": 1775750699030
+    },
+    {
+      "id": "auPcnSLYdfhaA_4ahZcG1",
+      "source": "sSFdbpBfwJEpZ5Y2R5GD9",
+      "target": "FFVaiY5a6mklZ4WoIHKx4",
+      "label": "deposited to",
+      "createdAt": 1775750699030,
+      "updatedAt": 1775750699030
+    },
+    {
+      "id": "bmBysxqvHMiNAXueo8p-D",
+      "source": "4KEXFuRCncrKfACGksvGB",
+      "target": "JF3ewBvBEAYNfzazeugUM",
+      "label": "defines",
+      "createdAt": 1775750699030,
+      "updatedAt": 1775750699030
+    },
+    {
+      "id": "e3joJx4NFTykgCl_UYuN1",
+      "source": "-kKWr_vLKOddNTAbcksZl",
+      "target": "v94vG0kRHYAk14UfdW2UR",
+      "label": "informs",
+      "createdAt": 1775750699031,
+      "updatedAt": 1775750699031
+    },
+    {
+      "id": "cxLKOWbwLT9HEBqaY8JK4",
+      "source": "QJI_EY9D5-00vXwovoZ8W",
+      "target": "__mv_b8WeD_iwOYfKjD8h",
+      "label": "registers",
+      "createdAt": 1775750699031,
+      "updatedAt": 1775750699031
+    },
+    {
+      "id": "YHXRgThORuylP48iQfKK8",
+      "source": "dg5cfjSHAenZYCsU87FjF",
+      "target": "gaIGcPJVTDHccS97ody9q",
+      "label": "references",
+      "createdAt": 1775750699031,
+      "updatedAt": 1775750699031
+    },
+    {
+      "id": "edge_cc_to_fixed",
+      "source": "ctr_CostCenter_001",
+      "target": "exp_Fixed_001",
+      "label": "has",
+      "createdAt": 1775751000000,
+      "updatedAt": 1775751000000
+    },
+    {
+      "id": "edge_cc_to_variable",
+      "source": "ctr_CostCenter_001",
+      "target": "exp_Variable_001",
+      "label": "has",
+      "createdAt": 1775751000000,
+      "updatedAt": 1775751000000
+    },
+    {
+      "id": "edge_fixed_to_costs",
+      "source": "exp_Fixed_001",
+      "target": "_Os_PpxE4iQzHlitCuWVp",
+      "label": "generates",
+      "createdAt": 1775751000000,
+      "updatedAt": 1775751000000
+    },
+    {
+      "id": "edge_variable_to_costs",
+      "source": "exp_Variable_001",
+      "target": "_Os_PpxE4iQzHlitCuWVp",
+      "label": "generates",
+      "createdAt": 1775751000000,
+      "updatedAt": 1775751000000
+    },
+    {
+      "id": "edge_fixed_to_forecast",
+      "source": "exp_Fixed_001",
+      "target": "-kKWr_vLKOddNTAbcksZl",
+      "label": "rolls forward",
+      "createdAt": 1775751000000,
+      "updatedAt": 1775751000000
+    },
+    {
+      "id": "edge_variable_to_forecast",
+      "source": "exp_Variable_001",
+      "target": "-kKWr_vLKOddNTAbcksZl",
+      "label": "projects from driver",
+      "createdAt": 1775751000000,
+      "updatedAt": 1775751000000
+    },
+    {
+      "id": "edge_budget_to_fixed",
+      "source": "v94vG0kRHYAk14UfdW2UR",
+      "target": "exp_Fixed_001",
+      "label": "expects",
+      "createdAt": 1775751000000,
+      "updatedAt": 1775751000000
+    },
+    {
+      "id": "edge_budget_to_variable",
+      "source": "v94vG0kRHYAk14UfdW2UR",
+      "target": "exp_Variable_001",
+      "label": "estimates",
+      "createdAt": 1775751000000,
+      "updatedAt": 1775751000000
+    },
+    {
+      "id": "edge_salary_to_fixed",
+      "source": "JF3ewBvBEAYNfzazeugUM",
+      "target": "exp_Fixed_001",
+      "label": "is a",
+      "createdAt": 1775751000000,
+      "updatedAt": 1775751000000
+    },
+    {
+      "id": "edge_opps_to_variable",
+      "source": "GDJmPMsO4kFiAgMB8u80e",
+      "target": "exp_Variable_001",
+      "label": "drives",
+      "createdAt": 1775751000000,
+      "updatedAt": 1775751000000
+    },
+    {
+      "id": "bUb_Vn4wAIemoJr1UuxHq",
+      "source": "Tp0b-6obJUvOpY_vc1-Q8",
+      "target": "GDJmPMsO4kFiAgMB8u80e",
+      "label": "assesses",
+      "createdAt": 1775754123713,
+      "updatedAt": 1775754123713
+    },
+    {
+      "id": "A2PJ9r9zVnArWywN0n--d",
+      "source": "OEMVEZuj5xjtfsjBBte9l",
+      "target": "Tp0b-6obJUvOpY_vc1-Q8",
+      "label": "informs",
+      "createdAt": 1775754124358,
+      "updatedAt": 1775754124358
+    },
+    {
+      "id": "5oDlITpvKCv_bognz8YQJ",
+      "source": "-kKWr_vLKOddNTAbcksZl",
+      "target": "2WNSrCSgrW1WV_CZa5A2L",
+      "label": "generates",
+      "createdAt": 1775755089871,
+      "updatedAt": 1775755089871
+    },
+    {
+      "id": "xMTrKuEPhIVJVHxayFQej",
+      "source": "OEMVEZuj5xjtfsjBBte9l",
+      "target": "_i-hoLGHUUmiOK0grjM3Y",
+      "label": "generates",
+      "createdAt": 1775755089872,
+      "updatedAt": 1775755089872
+    },
+    {
+      "id": "aOcxclHMNQYni2NgNu4fq",
+      "source": "_i-hoLGHUUmiOK0grjM3Y",
+      "target": "FFVaiY5a6mklZ4WoIHKx4",
+      "label": "deposits to",
+      "createdAt": 1775755089872,
+      "updatedAt": 1775755089872
+    },
+    {
+      "id": "9i6gDczLy4TTbxAGdxv3y",
+      "source": "_i-hoLGHUUmiOK0grjM3Y",
+      "target": "var_Variance_001",
+      "label": "actual input",
+      "createdAt": 1775755089872,
+      "updatedAt": 1775755089872
+    },
+    {
+      "id": "ky-_pxcDSHR4GxqgL2Akf",
+      "source": "v94vG0kRHYAk14UfdW2UR",
+      "target": "var_Variance_001",
+      "label": "planned input",
+      "createdAt": 1775755089873,
+      "updatedAt": 1775755089873
+    },
+    {
+      "id": "CakG1owC4clXRmJUGPFUr",
+      "source": "csKWEZId2hJnBb9tmI-o9",
+      "target": "2WNSrCSgrW1WV_CZa5A2L",
+      "label": "informs",
+      "createdAt": 1775755089873,
+      "updatedAt": 1775755089873
+    }
+  ]
+}

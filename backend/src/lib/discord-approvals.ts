@@ -1,240 +1,114 @@
-import {
-  ChannelType,
-  Client,
-  Events,
-  GatewayIntentBits,
-  Partials,
-  type Message,
-} from "discord.js";
+import { verifyKey } from "discord-interactions";
+import type { Request, Response } from "express";
 import type { PendingApproval } from "./approvals.js";
+
+const DISCORD_API = "https://discord.com/api/v10";
+
+const token = process.env.DISCORD_BOT_TOKEN;
+const channelId = process.env.DISCORD_APPROVAL_CHANNEL_ID;
+const publicKey = process.env.DISCORD_PUBLIC_KEY;
+const applicationId = process.env.DISCORD_APPLICATION_ID;
+const enabled = Boolean(token && channelId);
+
+// Discord interaction types
+const INTERACTION_TYPE_PING = 1;
+const INTERACTION_TYPE_MESSAGE_COMPONENT = 3;
+
+// Discord interaction response types
+const RESPONSE_TYPE_PONG = 1;
+const RESPONSE_TYPE_DEFERRED_UPDATE_MESSAGE = 6;
+
+// Discord component types & styles
+const COMPONENT_TYPE_ACTION_ROW = 1;
+const COMPONENT_TYPE_BUTTON = 2;
+const BUTTON_STYLE_SUCCESS = 3;
+const BUTTON_STYLE_DANGER = 4;
 
 type ApprovalDecisionHandler = (
   approvalId: string,
   decision: "allow" | "deny",
   source: string
-) => Promise<void>;
+) => Promise<unknown>;
 
-const token = process.env.DISCORD_BOT_TOKEN;
-const guildId = process.env.DISCORD_APPROVAL_GUILD_ID;
-const channelId = process.env.DISCORD_APPROVAL_CHANNEL_ID;
-const guildName = process.env.DISCORD_APPROVAL_GUILD_NAME || "lococo";
-const channelName = process.env.DISCORD_APPROVAL_CHANNEL_NAME || "bot";
-const enableMessageReplies = process.env.DISCORD_ENABLE_MESSAGE_CONTENT === "true";
-const enabled = Boolean(token);
-
-let clientPromise: Promise<Client<boolean> | null> | null = null;
 let approvalDecisionHandler: ApprovalDecisionHandler | null = null;
 
-function isAllowReaction(reaction: { emoji: { name: string | null } }) {
-  return reaction.emoji.name === "✅" || reaction.emoji.name === "white_check_mark";
-}
-
-function isDenyReaction(reaction: { emoji: { name: string | null } }) {
-  return reaction.emoji.name === "❌" || reaction.emoji.name === "x";
-}
-
-async function ensureClient() {
-  if (!enabled) {
-    return null;
-  }
-
-  if (!clientPromise) {
-    clientPromise = (async () => {
-      const client = new Client({
-        intents: [
-          GatewayIntentBits.Guilds,
-          GatewayIntentBits.GuildMessages,
-          GatewayIntentBits.GuildMessageReactions,
-          ...(enableMessageReplies ? [GatewayIntentBits.MessageContent] : []),
-        ],
-        partials: [Partials.Channel, Partials.Message, Partials.Reaction],
-      });
-
-      client.on(Events.ClientReady, () => {
-        console.log("Discord approval bot connected");
-        console.log(
-          `Discord bot user: ${client.user?.tag ?? "unknown"} (${client.user?.id ?? "unknown"})`
-        );
-        const visibleGuilds = client.guilds.cache.map(
-          (guild) => `${guild.name} (${guild.id})`
-        );
-        console.log(
-          `Discord bot guilds: ${visibleGuilds.length > 0 ? visibleGuilds.join(", ") : "none"}`
-        );
-      });
-
-      client.on(Events.MessageReactionAdd, async (reaction, user) => {
-        if (user.bot || !approvalDecisionHandler) {
-          return;
-        }
-
-        if (reaction.partial) {
-          await reaction.fetch();
-        }
-
-        const approvalId = reaction.message.id;
-
-        if (isAllowReaction(reaction)) {
-          await approvalDecisionHandler(approvalId, "allow", `discord-reaction:${user.id}`);
-          return;
-        }
-
-        if (isDenyReaction(reaction)) {
-          await approvalDecisionHandler(approvalId, "deny", `discord-reaction:${user.id}`);
-        }
-      });
-
-      client.on(Events.MessageCreate, async (message) => {
-        if (!enableMessageReplies) {
-          return;
-        }
-
-        if (message.author.bot || !approvalDecisionHandler) {
-          return;
-        }
-
-        const decision = message.content.trim().toLowerCase();
-
-        if (decision !== "allow" && decision !== "deny") {
-          return;
-        }
-
-        const referencedMessageId = message.reference?.messageId;
-
-        if (!referencedMessageId) {
-          return;
-        }
-
-        await approvalDecisionHandler(
-          referencedMessageId,
-          decision,
-          `discord-message:${message.author.id}`
-        );
-      });
-
-      try {
-        await client.login(token);
-        return client;
-      } catch (error) {
-        console.warn(
-          `Discord approval bot disabled: ${(error as Error).message}`
-        );
-        clientPromise = null;
-        return null;
-      }
-    })();
-  }
-
-  return clientPromise;
-}
-
-async function getApprovalChannel() {
-  const client = await ensureClient();
-
-  if (!client) {
-    return null;
-  }
-
-  let guild = null;
-
-  if (guildId) {
-    guild = await client.guilds.fetch(guildId).catch((error) => {
-      console.warn(
-        `Discord guild fetch failed for '${guildId}': ${(error as Error).message}`
-      );
-      return null;
-    });
-  }
-
-  if (!guild) {
-    await client.guilds.fetch();
-    guild = client.guilds.cache.find((entry) => entry.name === guildName) ?? null;
-  }
-
-  if (!guild) {
-    console.warn(
-      guildId
-        ? `Discord guild '${guildId}' not found for approvals`
-        : `Discord guild '${guildName}' not found for approvals`
-    );
-    const visibleGuilds = client.guilds.cache.map(
-      (entry) => `${entry.name} (${entry.id})`
-    );
-    console.warn(
-      `Discord bot can currently see: ${visibleGuilds.length > 0 ? visibleGuilds.join(", ") : "no guilds"}`
-    );
-    return null;
-  }
-
-  if (channelId) {
-    const explicitChannel = await guild.channels.fetch(channelId).catch((error) => {
-      console.warn(
-        `Discord channel fetch failed for '${channelId}': ${(error as Error).message}`
-      );
-      return null;
-    });
-
-    if (explicitChannel && explicitChannel.type === ChannelType.GuildText) {
-      return explicitChannel;
-    }
-
-    console.warn(
-      `Discord text channel '${channelId}' not found in guild '${guild.name}'`
-    );
-    return null;
-  }
-
-  await guild.channels.fetch();
-
-  const channel = guild.channels.cache.find(
-    (entry) => entry.type === ChannelType.GuildText && entry.name === channelName
-  );
-
-  if (!channel || channel.type !== ChannelType.GuildText) {
-    console.warn(
-      `Discord text channel '${channelName}' not found in guild '${guildName}'`
-    );
-    return null;
-  }
-
-  return channel;
-}
-
-export async function initDiscordApprovalBot(handler: ApprovalDecisionHandler) {
+export function setApprovalDecisionHandler(handler: ApprovalDecisionHandler) {
   approvalDecisionHandler = handler;
-  await ensureClient();
+}
+
+async function discordFetch(path: string, options: RequestInit = {}) {
+  const res = await fetch(`${DISCORD_API}${path}`, {
+    ...options,
+    headers: {
+      Authorization: `Bot ${token}`,
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    console.warn(`Discord API error ${res.status} ${path}: ${text}`);
+    return null;
+  }
+
+  return res;
 }
 
 export async function postApprovalToDiscord(approval: PendingApproval) {
-  const channel = await getApprovalChannel();
-
-  if (!channel) {
+  if (!enabled) {
     return undefined;
   }
 
-  const message = await channel.send({
-    content: [
-      "Approval requested",
-      `Agent: ${approval.agentId}`,
-      `Function: ${approval.toolName}`,
-      `Description: ${approval.description}`,
-      "Parameters:",
-      "```json",
-      JSON.stringify(approval.parameters, null, 2),
-      "```",
-      enableMessageReplies
-        ? 'React with ✅ to allow or ❌ to deny, or reply with "allow" or "deny".'
-        : "React with ✅ to allow or ❌ to deny.",
-    ].join("\n"),
+  const res = await discordFetch(`/channels/${channelId}/messages`, {
+    method: "POST",
+    body: JSON.stringify({
+      content: [
+        "**Approval requested**",
+        `**Agent:** ${approval.agentId}`,
+        `**Function:** ${approval.toolName}`,
+        `**Description:** ${approval.description}`,
+        "**Parameters:**",
+        "```json",
+        JSON.stringify(approval.parameters, null, 2),
+        "```",
+      ].join("\n"),
+      components: [
+        {
+          type: COMPONENT_TYPE_ACTION_ROW,
+          components: [
+            {
+              type: COMPONENT_TYPE_BUTTON,
+              style: BUTTON_STYLE_SUCCESS,
+              label: "Allow",
+              custom_id: `approval_allow:${approval.id}`,
+            },
+            {
+              type: COMPONENT_TYPE_BUTTON,
+              style: BUTTON_STYLE_DANGER,
+              label: "Deny",
+              custom_id: `approval_deny:${approval.id}`,
+            },
+          ],
+        },
+      ],
+    }),
   });
 
-  await message.react("✅");
-  await message.react("❌");
+  if (!res) {
+    return undefined;
+  }
+
+  const message = (await res.json()) as {
+    id: string;
+    channel_id: string;
+    guild_id?: string;
+  };
 
   return {
     discordMessageId: message.id,
-    discordChannelId: message.channelId,
-    discordGuildId: message.guildId ?? undefined,
+    discordChannelId: message.channel_id,
+    discordGuildId: message.guild_id,
   };
 }
 
@@ -243,27 +117,112 @@ export async function markDiscordApprovalResolved(
   decision: "allow" | "deny",
   source: string
 ) {
-  const client = await ensureClient();
-
-  if (!client || !approval.discordChannelId || !approval.discordMessageId) {
+  if (!approval.discordChannelId || !approval.discordMessageId) {
     return;
   }
 
-  const channel = await client.channels.fetch(approval.discordChannelId);
+  const label = decision === "allow" ? "Allowed" : "Denied";
 
-  if (!channel || channel.type !== ChannelType.GuildText) {
-    return;
-  }
-
-  const message = (await channel.messages.fetch(approval.discordMessageId).catch(
-    () => null
-  )) as Message<boolean> | null;
-
-  if (!message) {
-    return;
-  }
-
-  await message.reply(
-    `Approval ${decision === "allow" ? "granted" : "denied"} via ${source}.`
+  // Edit the original message to disable buttons and show result
+  await discordFetch(
+    `/channels/${approval.discordChannelId}/messages/${approval.discordMessageId}`,
+    {
+      method: "PATCH",
+      body: JSON.stringify({
+        components: [
+          {
+            type: COMPONENT_TYPE_ACTION_ROW,
+            components: [
+              {
+                type: COMPONENT_TYPE_BUTTON,
+                style:
+                  decision === "allow"
+                    ? BUTTON_STYLE_SUCCESS
+                    : BUTTON_STYLE_DANGER,
+                label: `${label} via ${source}`,
+                custom_id: `resolved:${approval.id}`,
+                disabled: true,
+              },
+            ],
+          },
+        ],
+      }),
+    }
   );
+}
+
+export async function handleDiscordInteraction(req: Request, res: Response) {
+  if (!publicKey) {
+    res.status(500).json({ error: "DISCORD_PUBLIC_KEY not configured" });
+    return;
+  }
+
+  // Verify the request signature
+  const signature = req.headers["x-signature-ed25519"] as string;
+  const timestamp = req.headers["x-signature-timestamp"] as string;
+  const rawBody = (req as Request & { body: Buffer }).body;
+
+  const isValid = verifyKey(rawBody, signature, timestamp, publicKey);
+
+  if (!isValid) {
+    res.status(401).json({ error: "Invalid request signature" });
+    return;
+  }
+
+  const interaction = JSON.parse(rawBody.toString());
+
+  // Handle PING (Discord endpoint verification)
+  if (interaction.type === INTERACTION_TYPE_PING) {
+    res.json({ type: RESPONSE_TYPE_PONG });
+    return;
+  }
+
+  // Handle button clicks
+  if (interaction.type === INTERACTION_TYPE_MESSAGE_COMPONENT) {
+    const customId = interaction.data?.custom_id as string;
+
+    if (!customId?.startsWith("approval_")) {
+      res.json({ type: RESPONSE_TYPE_DEFERRED_UPDATE_MESSAGE });
+      return;
+    }
+
+    const [action, approvalId] = customId.split(/:(.+)/);
+    const decision = action === "approval_allow" ? "allow" : "deny";
+    const userId = interaction.member?.user?.id ?? interaction.user?.id ?? "unknown";
+    const source = `discord-button:${userId}`;
+
+    // Respond immediately with deferred update (acknowledge the button click)
+    res.json({ type: RESPONSE_TYPE_DEFERRED_UPDATE_MESSAGE });
+
+    // Resolve the approval in the background
+    if (approvalDecisionHandler) {
+      try {
+        await approvalDecisionHandler(approvalId, decision, source);
+      } catch (error) {
+        console.warn(
+          `Failed to resolve approval ${approvalId}: ${(error as Error).message}`
+        );
+      }
+    }
+
+    // Post a followup message with the result
+    if (applicationId) {
+      const interactionToken = interaction.token as string;
+      await fetch(
+        `${DISCORD_API}/webhooks/${applicationId}/${interactionToken}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            content: `Approval **${decision === "allow" ? "granted" : "denied"}** by <@${userId}>.`,
+            flags: 64, // Ephemeral - only visible to the user who clicked
+          }),
+        }
+      );
+    }
+
+    return;
+  }
+
+  res.json({ type: RESPONSE_TYPE_PONG });
 }

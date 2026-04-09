@@ -20,9 +20,10 @@ import {
   updatePendingApproval,
 } from "./lib/approvals.js";
 import {
-  initDiscordApprovalBot,
+  handleDiscordInteraction,
   markDiscordApprovalResolved,
   postApprovalToDiscord,
+  setApprovalDecisionHandler,
 } from "./lib/discord-approvals.js";
 import {
   createPolicy,
@@ -154,14 +155,14 @@ async function createRunResponse<TContext>(
   result: RunResult<TContext, any>
 ) {
   if (result.interruptions.length > 0) {
-    const approvals = createPendingApprovals(agentId, result);
+    const approvals = await createPendingApprovals(agentId, result);
 
     const approvalsWithDiscordState = await Promise.all(
       approvals.map(async (approval) => {
         const discordMessage = await postApprovalToDiscord(approval);
 
         if (discordMessage) {
-          return updatePendingApproval(approval.id, discordMessage) ?? approval;
+          return (await updatePendingApproval(approval.id, discordMessage)) ?? approval;
         }
 
         return approval;
@@ -187,7 +188,7 @@ async function resolvePendingApproval(
   decision: "allow" | "deny",
   source: string
 ) {
-  const approval = getPendingApproval(approvalId);
+  const approval = await getPendingApproval(approvalId);
 
   if (!approval) {
     throw new Error(`Unknown approval '${approvalId}'`);
@@ -208,7 +209,7 @@ async function resolvePendingApproval(
     );
 
   if (!approvalItem) {
-    deletePendingApproval(approvalId);
+    await deletePendingApproval(approvalId);
     throw new Error("Approval is no longer pending");
   }
 
@@ -218,7 +219,11 @@ async function resolvePendingApproval(
     runState.reject(approvalItem);
   }
 
-  deletePendingApproval(approvalId);
+  await deletePendingApproval(
+    approvalId,
+    decision === "allow" ? "allowed" : "denied",
+    source
+  );
   await markDiscordApprovalResolved(approval, decision, source);
 
   const result = await run(agent, runState);
@@ -227,7 +232,27 @@ async function resolvePendingApproval(
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 25 * 1024 * 1024 } });
 
+// Wire up the Discord interaction handler to resolve approvals
+setApprovalDecisionHandler(async (discordMessageId, decision, source) => {
+  const approval = await getPendingApprovalByDiscordMessageId(discordMessageId);
+
+  if (!approval) {
+    return;
+  }
+
+  await resolvePendingApproval(approval.id, decision, source);
+});
+
 app.use(cors({ origin: process.env.CORS_ORIGIN || "http://localhost:5173" }));
+
+// Discord interactions endpoint needs raw body for signature verification.
+// Must be registered before express.json() middleware.
+app.post(
+  "/api/discord/interactions",
+  express.raw({ type: "application/json" }),
+  handleDiscordInteraction
+);
+
 app.use(express.json());
 
 app.get("/health", (_req, res) => {
@@ -257,7 +282,7 @@ app.post("/api/transcribe", upload.single("file"), async (req, res) => {
       return;
     }
 
-    const audioFile = new File([file.buffer], file.originalname || "recording.wav", {
+    const audioFile = new File([new Uint8Array(file.buffer)], file.originalname || "recording.wav", {
       type: file.mimetype || "audio/wav",
     });
 
@@ -294,8 +319,12 @@ app.get("/api/agents", async (_req, res) => {
   }
 });
 
-app.get("/api/approvals", (_req, res) => {
-  res.json({ approvals: listPendingApprovals() });
+app.get("/api/approvals", async (_req, res) => {
+  try {
+    res.json({ approvals: await listPendingApprovals() });
+  } catch (e) {
+    res.status(500).json({ error: (e as Error).message });
+  }
 });
 
 app.get("/api/functions", (_req, res) => {
@@ -464,21 +493,7 @@ app.post("/api/agents/:agentId/stream", async (req, res) => {
   }
 });
 
-if (process.env.VERCEL) {
-  // Vercel handles routing via serverless functions
-} else {
-  void initDiscordApprovalBot(async (discordMessageId, decision, source) => {
-    const approval = getPendingApprovalByDiscordMessageId(discordMessageId);
-
-    if (!approval) {
-      return;
-    }
-
-    await resolvePendingApproval(approval.id, decision, source);
-  }).catch((error: Error) => {
-    console.warn(`Discord approval bot failed to initialize: ${error.message}`);
-  });
-
+if (!process.env.VERCEL) {
   app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
   });
