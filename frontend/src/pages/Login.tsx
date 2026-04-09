@@ -3,17 +3,10 @@ import { useNavigate } from "@tanstack/react-router"
 import { Rocket } from "lucide-react"
 import { toast } from "sonner"
 import { useAuth } from "@/contexts/auth-context"
-import { Button } from "@/components/ui/button"
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+  Button, Card, CardContent, CardDescription, CardHeader, CardTitle,
+  Input, Label, Tabs, TabsContent, TabsList, TabsTrigger,
+} from "@startupos/ui"
 
 export default function Login() {
   const { signIn, signUp } = useAuth()

@@ -1,0 +1,1899 @@
+{
+  "$schema": "https://startupos.dev/registry-schema.json",
+  "name": "@startupos/ui",
+  "version": "0.1.0",
+  "description": "Generative UI component toolkit for AI agent composition",
+  "components": [
+    {
+      "name": "Button",
+      "slug": "button",
+      "description": "Interactive button with multiple visual variants, sizes, and asChild polymorphism",
+      "category": "atom",
+      "tags": ["interactive", "form", "action"],
+      "importStatement": "import { Button } from \"@startupos/ui\"",
+      "props": [
+        {
+          "name": "variant",
+          "type": "\"default\" | \"destructive\" | \"outline\" | \"secondary\" | \"ghost\" | \"link\" | \"glass\"",
+          "required": false,
+          "default": "\"default\"",
+          "description": "Visual style variant"
+        },
+        {
+          "name": "size",
+          "type": "\"default\" | \"xs\" | \"sm\" | \"lg\" | \"icon\" | \"icon-xs\" | \"icon-sm\" | \"icon-lg\"",
+          "required": false,
+          "default": "\"default\"",
+          "description": "Button size. Icon sizes render as square buttons."
+        },
+        {
+          "name": "asChild",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Render as Slot.Root instead of button element, merging props onto child"
+        }
+      ],
+      "variants": [
+        {
+          "name": "variant",
+          "options": [
+            { "value": "default", "description": "Solid primary background" },
+            { "value": "destructive", "description": "Red destructive action" },
+            { "value": "outline", "description": "Border with transparent background" },
+            { "value": "secondary", "description": "Muted secondary background" },
+            { "value": "ghost", "description": "No background, hover reveals accent" },
+            { "value": "link", "description": "Styled as underline link" },
+            { "value": "glass", "description": "Frosted glass backdrop blur effect" }
+          ],
+          "default": "default"
+        },
+        {
+          "name": "size",
+          "options": [
+            { "value": "default", "description": "Standard h-9 button" },
+            { "value": "xs", "description": "Extra small h-6" },
+            { "value": "sm", "description": "Small h-8" },
+            { "value": "lg", "description": "Large h-10" },
+            { "value": "icon", "description": "Square 36px icon button" },
+            { "value": "icon-xs", "description": "Square 24px icon button" },
+            { "value": "icon-sm", "description": "Square 32px icon button" },
+            { "value": "icon-lg", "description": "Square 40px icon button" }
+          ],
+          "default": "default"
+        }
+      ],
+      "slots": [],
+      "compositionRules": [],
+      "layout": {
+        "display": "inline",
+        "acceptsChildren": true,
+        "childConstraints": []
+      },
+      "examples": [
+        {
+          "title": "Basic usage",
+          "code": "<Button variant=\"secondary\">Click me</Button>"
+        },
+        {
+          "title": "Icon button",
+          "code": "<Button variant=\"ghost\" size=\"icon\"><Settings className=\"h-4 w-4\" /></Button>"
+        },
+        {
+          "title": "As link",
+          "code": "<Button asChild><a href=\"/page\">Navigate</a></Button>"
+        }
+      ],
+      "dataSlot": "button"
+    },
+    {
+      "name": "Badge",
+      "slug": "badge",
+      "description": "Small status label with color variants",
+      "category": "atom",
+      "tags": ["display", "status", "label"],
+      "importStatement": "import { Badge } from \"@startupos/ui\"",
+      "props": [
+        {
+          "name": "variant",
+          "type": "\"default\" | \"secondary\" | \"destructive\" | \"outline\"",
+          "required": false,
+          "default": "\"default\"",
+          "description": "Visual style variant"
+        }
+      ],
+      "variants": [
+        {
+          "name": "variant",
+          "options": [
+            { "value": "default", "description": "Primary solid background" },
+            { "value": "secondary", "description": "Muted secondary background" },
+            { "value": "destructive", "description": "Red destructive indicator" },
+            { "value": "outline", "description": "Border only, transparent background" }
+          ],
+          "default": "default"
+        }
+      ],
+      "slots": [],
+      "compositionRules": [],
+      "layout": {
+        "display": "inline",
+        "acceptsChildren": true,
+        "childConstraints": []
+      },
+      "examples": [
+        {
+          "title": "Status badge",
+          "code": "<Badge variant=\"secondary\">Active</Badge>"
+        }
+      ],
+      "dataSlot": "badge"
+    },
+    {
+      "name": "Input",
+      "slug": "input",
+      "description": "Text input field with focus ring and validation states",
+      "category": "atom",
+      "tags": ["form", "input", "interactive"],
+      "importStatement": "import { Input } from \"@startupos/ui\"",
+      "props": [
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "\"text\"",
+          "description": "HTML input type attribute"
+        }
+      ],
+      "variants": [],
+      "slots": [],
+      "compositionRules": [],
+      "layout": {
+        "display": "block",
+        "acceptsChildren": false,
+        "childConstraints": []
+      },
+      "examples": [
+        {
+          "title": "Basic input",
+          "code": "<Input placeholder=\"Enter text...\" />"
+        },
+        {
+          "title": "With label",
+          "code": "<div className=\"grid gap-2\">\n  <Label htmlFor=\"email\">Email</Label>\n  <Input id=\"email\" type=\"email\" placeholder=\"user@example.com\" />\n</div>"
+        }
+      ],
+      "dataSlot": "input"
+    },
+    {
+      "name": "Textarea",
+      "slug": "textarea",
+      "description": "Multi-line text input with auto-resize support",
+      "category": "atom",
+      "tags": ["form", "input", "interactive"],
+      "importStatement": "import { Textarea } from \"@startupos/ui\"",
+      "props": [],
+      "variants": [],
+      "slots": [],
+      "compositionRules": [],
+      "layout": {
+        "display": "block",
+        "acceptsChildren": false,
+        "childConstraints": []
+      },
+      "examples": [
+        {
+          "title": "Basic textarea",
+          "code": "<Textarea placeholder=\"Write something...\" />"
+        }
+      ],
+      "dataSlot": "textarea"
+    },
+    {
+      "name": "Separator",
+      "slug": "separator",
+      "description": "Visual divider between content sections",
+      "category": "atom",
+      "tags": ["layout", "divider"],
+      "importStatement": "import { Separator } from \"@startupos/ui\"",
+      "props": [
+        {
+          "name": "orientation",
+          "type": "\"horizontal\" | \"vertical\"",
+          "required": false,
+          "default": "\"horizontal\"",
+          "description": "Direction of the separator line"
+        },
+        {
+          "name": "decorative",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "When true, removes separator role for accessibility"
+        }
+      ],
+      "variants": [],
+      "slots": [],
+      "compositionRules": [],
+      "layout": {
+        "display": "block",
+        "acceptsChildren": false,
+        "childConstraints": []
+      },
+      "examples": [
+        {
+          "title": "Horizontal separator",
+          "code": "<Separator />"
+        },
+        {
+          "title": "Vertical separator",
+          "code": "<Separator orientation=\"vertical\" className=\"h-6\" />"
+        }
+      ],
+      "dataSlot": "separator"
+    },
+    {
+      "name": "Progress",
+      "slug": "progress",
+      "description": "Horizontal progress bar with animated fill",
+      "category": "atom",
+      "tags": ["display", "feedback", "loading"],
+      "importStatement": "import { Progress } from \"@startupos/ui\"",
+      "props": [
+        {
+          "name": "value",
+          "type": "number",
+          "required": false,
+          "default": "0",
+          "description": "Progress value from 0 to 100"
+        }
+      ],
+      "variants": [],
+      "slots": [],
+      "compositionRules": [],
+      "layout": {
+        "display": "block",
+        "acceptsChildren": false,
+        "childConstraints": []
+      },
+      "examples": [
+        {
+          "title": "Basic progress",
+          "code": "<Progress value={60} />"
+        }
+      ],
+      "dataSlot": "progress"
+    },
+    {
+      "name": "Skeleton",
+      "slug": "skeleton",
+      "description": "Animated placeholder for loading content",
+      "category": "atom",
+      "tags": ["display", "loading", "placeholder"],
+      "importStatement": "import { Skeleton } from \"@startupos/ui\"",
+      "props": [],
+      "variants": [],
+      "slots": [],
+      "compositionRules": [],
+      "layout": {
+        "display": "block",
+        "acceptsChildren": false,
+        "childConstraints": []
+      },
+      "examples": [
+        {
+          "title": "Content skeleton",
+          "code": "<div className=\"flex items-center gap-3\">\n  <Skeleton className=\"h-10 w-10 rounded-full\" />\n  <div className=\"space-y-2\">\n    <Skeleton className=\"h-4 w-48\" />\n    <Skeleton className=\"h-3 w-32\" />\n  </div>\n</div>"
+        }
+      ],
+      "dataSlot": null
+    },
+    {
+      "name": "Spinner",
+      "slug": "spinner",
+      "description": "Small inline spinning indicator",
+      "category": "atom",
+      "tags": ["display", "loading", "feedback"],
+      "importStatement": "import { Spinner } from \"@startupos/ui\"",
+      "props": [],
+      "variants": [],
+      "slots": [],
+      "compositionRules": [],
+      "layout": {
+        "display": "inline",
+        "acceptsChildren": false,
+        "childConstraints": []
+      },
+      "examples": [
+        {
+          "title": "Inline spinner",
+          "code": "<Spinner />"
+        }
+      ],
+      "dataSlot": null
+    },
+    {
+      "name": "Label",
+      "slug": "label",
+      "description": "Accessible label for form controls with muted styling",
+      "category": "atom",
+      "tags": ["form", "accessibility", "text"],
+      "importStatement": "import { Label } from \"@startupos/ui\"",
+      "props": [
+        {
+          "name": "htmlFor",
+          "type": "string",
+          "required": false,
+          "description": "ID of the form element this label is for"
+        }
+      ],
+      "variants": [],
+      "slots": [],
+      "compositionRules": [
+        { "rule": "Use with Input, Textarea, Select, Switch, Checkbox, or RadioGroup", "type": "suggests" }
+      ],
+      "layout": {
+        "display": "inline",
+        "acceptsChildren": true,
+        "childConstraints": []
+      },
+      "examples": [
+        {
+          "title": "With input",
+          "code": "<div className=\"grid gap-2\">\n  <Label htmlFor=\"name\">Name</Label>\n  <Input id=\"name\" />\n</div>"
+        }
+      ],
+      "dataSlot": "label"
+    },
+    {
+      "name": "Tooltip",
+      "slug": "tooltip",
+      "description": "Popup hint on hover/focus with arrow and animation",
+      "category": "atom",
+      "tags": ["overlay", "informational", "interactive"],
+      "importStatement": "import { Tooltip, TooltipTrigger, TooltipContent } from \"@startupos/ui\"",
+      "props": [],
+      "variants": [],
+      "slots": [
+        {
+          "name": "TooltipTrigger",
+          "required": true,
+          "description": "Element that triggers the tooltip on hover/focus"
+        },
+        {
+          "name": "TooltipContent",
+          "required": true,
+          "description": "Content shown in the tooltip popup"
+        }
+      ],
+      "compositionRules": [
+        { "rule": "TooltipTrigger and TooltipContent must be inside Tooltip", "type": "requires" }
+      ],
+      "layout": {
+        "display": "inline",
+        "acceptsChildren": false,
+        "childConstraints": ["TooltipTrigger", "TooltipContent"]
+      },
+      "examples": [
+        {
+          "title": "Basic tooltip",
+          "code": "<Tooltip>\n  <TooltipTrigger asChild>\n    <Button variant=\"ghost\" size=\"icon\"><Info className=\"h-4 w-4\" /></Button>\n  </TooltipTrigger>\n  <TooltipContent>More information</TooltipContent>\n</Tooltip>"
+        }
+      ],
+      "dataSlot": "tooltip"
+    },
+    {
+      "name": "Switch",
+      "slug": "switch",
+      "description": "Toggle control with track and thumb for on/off states",
+      "category": "atom",
+      "tags": ["form", "interactive", "toggle"],
+      "importStatement": "import { Switch } from \"@startupos/ui\"",
+      "props": [
+        {
+          "name": "checked",
+          "type": "boolean",
+          "required": false,
+          "description": "Controlled checked state"
+        },
+        {
+          "name": "onCheckedChange",
+          "type": "(checked: boolean) => void",
+          "required": false,
+          "description": "Callback when checked state changes"
+        }
+      ],
+      "variants": [],
+      "slots": [],
+      "compositionRules": [
+        { "rule": "Pair with Label for accessibility", "type": "suggests" }
+      ],
+      "layout": {
+        "display": "inline",
+        "acceptsChildren": false,
+        "childConstraints": []
+      },
+      "examples": [
+        {
+          "title": "With label",
+          "code": "<div className=\"flex items-center gap-2\">\n  <Switch id=\"notifications\" />\n  <Label htmlFor=\"notifications\">Enable notifications</Label>\n</div>"
+        }
+      ],
+      "dataSlot": "switch"
+    },
+    {
+      "name": "Checkbox",
+      "slug": "checkbox",
+      "description": "Checkable input with check and indeterminate indicators",
+      "category": "atom",
+      "tags": ["form", "interactive", "selection"],
+      "importStatement": "import { Checkbox } from \"@startupos/ui\"",
+      "props": [
+        {
+          "name": "checked",
+          "type": "boolean | \"indeterminate\"",
+          "required": false,
+          "description": "Controlled checked state, supports indeterminate"
+        },
+        {
+          "name": "onCheckedChange",
+          "type": "(checked: boolean | \"indeterminate\") => void",
+          "required": false,
+          "description": "Callback when checked state changes"
+        }
+      ],
+      "variants": [],
+      "slots": [],
+      "compositionRules": [
+        { "rule": "Pair with Label for accessibility", "type": "suggests" }
+      ],
+      "layout": {
+        "display": "inline",
+        "acceptsChildren": false,
+        "childConstraints": []
+      },
+      "examples": [
+        {
+          "title": "With label",
+          "code": "<div className=\"flex items-center gap-2\">\n  <Checkbox id=\"terms\" />\n  <Label htmlFor=\"terms\">Accept terms</Label>\n</div>"
+        }
+      ],
+      "dataSlot": "checkbox"
+    },
+    {
+      "name": "RadioGroup",
+      "slug": "radio-group",
+      "description": "Group of mutually exclusive radio options",
+      "category": "atom",
+      "tags": ["form", "interactive", "selection"],
+      "importStatement": "import { RadioGroup, RadioGroupItem } from \"@startupos/ui\"",
+      "props": [
+        {
+          "name": "value",
+          "type": "string",
+          "required": false,
+          "description": "Controlled selected value"
+        },
+        {
+          "name": "onValueChange",
+          "type": "(value: string) => void",
+          "required": false,
+          "description": "Callback when selection changes"
+        }
+      ],
+      "variants": [],
+      "slots": [
+        {
+          "name": "RadioGroupItem",
+          "required": true,
+          "description": "Individual radio option with a value"
+        }
+      ],
+      "compositionRules": [
+        { "rule": "RadioGroupItem must be inside RadioGroup", "type": "requires" },
+        { "rule": "Pair each RadioGroupItem with a Label", "type": "suggests" }
+      ],
+      "layout": {
+        "display": "block",
+        "acceptsChildren": false,
+        "childConstraints": ["RadioGroupItem"]
+      },
+      "examples": [
+        {
+          "title": "Basic radio group",
+          "code": "<RadioGroup defaultValue=\"option-1\">\n  <div className=\"flex items-center gap-2\">\n    <RadioGroupItem value=\"option-1\" id=\"r1\" />\n    <Label htmlFor=\"r1\">Option 1</Label>\n  </div>\n  <div className=\"flex items-center gap-2\">\n    <RadioGroupItem value=\"option-2\" id=\"r2\" />\n    <Label htmlFor=\"r2\">Option 2</Label>\n  </div>\n</RadioGroup>"
+        }
+      ],
+      "dataSlot": "radio-group"
+    },
+    {
+      "name": "Slider",
+      "slug": "slider",
+      "description": "Draggable range input with track and thumb",
+      "category": "atom",
+      "tags": ["form", "interactive", "range"],
+      "importStatement": "import { Slider } from \"@startupos/ui\"",
+      "props": [
+        {
+          "name": "value",
+          "type": "number[]",
+          "required": false,
+          "description": "Controlled value (array for range support)"
+        },
+        {
+          "name": "defaultValue",
+          "type": "number[]",
+          "required": false,
+          "description": "Default uncontrolled value"
+        },
+        {
+          "name": "min",
+          "type": "number",
+          "required": false,
+          "default": "0",
+          "description": "Minimum value"
+        },
+        {
+          "name": "max",
+          "type": "number",
+          "required": false,
+          "default": "100",
+          "description": "Maximum value"
+        },
+        {
+          "name": "step",
+          "type": "number",
+          "required": false,
+          "default": "1",
+          "description": "Step increment"
+        },
+        {
+          "name": "onValueChange",
+          "type": "(value: number[]) => void",
+          "required": false,
+          "description": "Callback when value changes"
+        }
+      ],
+      "variants": [],
+      "slots": [],
+      "compositionRules": [],
+      "layout": {
+        "display": "block",
+        "acceptsChildren": false,
+        "childConstraints": []
+      },
+      "examples": [
+        {
+          "title": "Basic slider",
+          "code": "<Slider defaultValue={[50]} max={100} step={1} />"
+        }
+      ],
+      "dataSlot": "slider"
+    },
+    {
+      "name": "Toggle",
+      "slug": "toggle",
+      "description": "Pressable on/off button with variant styling",
+      "category": "atom",
+      "tags": ["interactive", "toggle", "action"],
+      "importStatement": "import { Toggle } from \"@startupos/ui\"",
+      "props": [
+        {
+          "name": "variant",
+          "type": "\"default\" | \"outline\"",
+          "required": false,
+          "default": "\"default\"",
+          "description": "Visual style variant"
+        },
+        {
+          "name": "size",
+          "type": "\"default\" | \"sm\" | \"lg\"",
+          "required": false,
+          "default": "\"default\"",
+          "description": "Toggle size"
+        },
+        {
+          "name": "pressed",
+          "type": "boolean",
+          "required": false,
+          "description": "Controlled pressed state"
+        },
+        {
+          "name": "onPressedChange",
+          "type": "(pressed: boolean) => void",
+          "required": false,
+          "description": "Callback when pressed state changes"
+        }
+      ],
+      "variants": [
+        {
+          "name": "variant",
+          "options": [
+            { "value": "default", "description": "Transparent background, accent on press" },
+            { "value": "outline", "description": "Border style, accent on press" }
+          ],
+          "default": "default"
+        },
+        {
+          "name": "size",
+          "options": [
+            { "value": "default", "description": "Standard h-9" },
+            { "value": "sm", "description": "Small h-8" },
+            { "value": "lg", "description": "Large h-10" }
+          ],
+          "default": "default"
+        }
+      ],
+      "slots": [],
+      "compositionRules": [],
+      "layout": {
+        "display": "inline",
+        "acceptsChildren": true,
+        "childConstraints": []
+      },
+      "examples": [
+        {
+          "title": "Bold toggle",
+          "code": "<Toggle aria-label=\"Toggle bold\">\n  <Bold className=\"h-4 w-4\" />\n</Toggle>"
+        }
+      ],
+      "dataSlot": "toggle"
+    },
+    {
+      "name": "Avatar",
+      "slug": "avatar",
+      "description": "User avatar with image and fallback initials, multiple sizes",
+      "category": "atom",
+      "tags": ["display", "user", "image"],
+      "importStatement": "import { Avatar, AvatarImage, AvatarFallback } from \"@startupos/ui\"",
+      "props": [
+        {
+          "name": "size",
+          "type": "\"sm\" | \"default\" | \"lg\"",
+          "required": false,
+          "default": "\"default\"",
+          "description": "Avatar size"
+        }
+      ],
+      "variants": [
+        {
+          "name": "size",
+          "options": [
+            { "value": "sm", "description": "Small 24px avatar" },
+            { "value": "default", "description": "Standard 32px avatar" },
+            { "value": "lg", "description": "Large 48px avatar" }
+          ],
+          "default": "default"
+        }
+      ],
+      "slots": [
+        {
+          "name": "AvatarImage",
+          "required": false,
+          "description": "Image element, hidden until loaded"
+        },
+        {
+          "name": "AvatarFallback",
+          "required": false,
+          "description": "Fallback content shown while image loads or on error"
+        }
+      ],
+      "compositionRules": [
+        { "rule": "AvatarImage and AvatarFallback must be inside Avatar", "type": "requires" },
+        { "rule": "Provide AvatarFallback for graceful degradation", "type": "suggests" }
+      ],
+      "layout": {
+        "display": "inline",
+        "acceptsChildren": false,
+        "childConstraints": ["AvatarImage", "AvatarFallback"]
+      },
+      "examples": [
+        {
+          "title": "With image and fallback",
+          "code": "<Avatar>\n  <AvatarImage src=\"/avatar.jpg\" alt=\"User\" />\n  <AvatarFallback>JD</AvatarFallback>\n</Avatar>"
+        },
+        {
+          "title": "Large size",
+          "code": "<Avatar size=\"lg\">\n  <AvatarFallback>AB</AvatarFallback>\n</Avatar>"
+        }
+      ],
+      "dataSlot": "avatar"
+    },
+    {
+      "name": "AspectRatio",
+      "slug": "aspect-ratio",
+      "description": "Container that maintains a specified width-to-height ratio",
+      "category": "atom",
+      "tags": ["layout", "container", "media"],
+      "importStatement": "import { AspectRatio } from \"@startupos/ui\"",
+      "props": [
+        {
+          "name": "ratio",
+          "type": "number",
+          "required": false,
+          "default": "1",
+          "description": "Width-to-height ratio (e.g. 16/9)"
+        }
+      ],
+      "variants": [],
+      "slots": [],
+      "compositionRules": [],
+      "layout": {
+        "display": "block",
+        "acceptsChildren": true,
+        "childConstraints": []
+      },
+      "examples": [
+        {
+          "title": "16:9 image container",
+          "code": "<AspectRatio ratio={16 / 9}>\n  <img src=\"/photo.jpg\" className=\"h-full w-full rounded-md object-cover\" />\n</AspectRatio>"
+        }
+      ],
+      "dataSlot": "aspect-ratio"
+    },
+    {
+      "name": "Card",
+      "slug": "card",
+      "description": "Container with border, background, and structured header/content/footer slots",
+      "category": "molecule",
+      "tags": ["container", "surface", "layout"],
+      "importStatement": "import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from \"@startupos/ui\"",
+      "props": [],
+      "variants": [],
+      "slots": [
+        {
+          "name": "CardHeader",
+          "required": false,
+          "description": "Top section with title and optional actions"
+        },
+        {
+          "name": "CardTitle",
+          "required": false,
+          "description": "Card heading text"
+        },
+        {
+          "name": "CardDescription",
+          "required": false,
+          "description": "Muted description text below title"
+        },
+        {
+          "name": "CardContent",
+          "required": false,
+          "description": "Main content area with horizontal padding"
+        },
+        {
+          "name": "CardFooter",
+          "required": false,
+          "description": "Bottom section with inline items"
+        }
+      ],
+      "compositionRules": [
+        { "rule": "CardTitle and CardDescription must be inside CardHeader", "type": "requires" },
+        { "rule": "Order: CardHeader → CardContent → CardFooter", "type": "ordering" }
+      ],
+      "layout": {
+        "display": "block",
+        "acceptsChildren": false,
+        "childConstraints": ["CardHeader", "CardContent", "CardFooter"]
+      },
+      "examples": [
+        {
+          "title": "Full card",
+          "code": "<Card>\n  <CardHeader>\n    <CardTitle>Title</CardTitle>\n    <CardDescription>Description text</CardDescription>\n  </CardHeader>\n  <CardContent>\n    <p>Card content here</p>\n  </CardContent>\n  <CardFooter>\n    <Button>Action</Button>\n  </CardFooter>\n</Card>"
+        }
+      ],
+      "dataSlot": "card"
+    },
+    {
+      "name": "GlassCard",
+      "slug": "glass-card",
+      "description": "Card with frosted glass backdrop blur effect",
+      "category": "molecule",
+      "tags": ["container", "surface", "glass"],
+      "importStatement": "import { GlassCard, GlassCardHeader, GlassCardContent } from \"@startupos/ui\"",
+      "props": [],
+      "variants": [],
+      "slots": [
+        {
+          "name": "GlassCardHeader",
+          "required": false,
+          "description": "Header section with padding"
+        },
+        {
+          "name": "GlassCardContent",
+          "required": false,
+          "description": "Content area with padding"
+        }
+      ],
+      "compositionRules": [
+        { "rule": "Order: GlassCardHeader → GlassCardContent", "type": "ordering" }
+      ],
+      "layout": {
+        "display": "block",
+        "acceptsChildren": false,
+        "childConstraints": ["GlassCardHeader", "GlassCardContent"]
+      },
+      "examples": [
+        {
+          "title": "Glass card",
+          "code": "<GlassCard>\n  <GlassCardHeader>\n    <h3>Title</h3>\n  </GlassCardHeader>\n  <GlassCardContent>\n    <p>Content with glass effect</p>\n  </GlassCardContent>\n</GlassCard>"
+        }
+      ],
+      "dataSlot": "glass-card"
+    },
+    {
+      "name": "Collapsible",
+      "slug": "collapsible",
+      "description": "Expandable/collapsible content container",
+      "category": "molecule",
+      "tags": ["interactive", "disclosure", "layout"],
+      "importStatement": "import { Collapsible, CollapsibleTrigger, CollapsibleContent } from \"@startupos/ui\"",
+      "props": [
+        {
+          "name": "open",
+          "type": "boolean",
+          "required": false,
+          "description": "Controlled open state"
+        },
+        {
+          "name": "onOpenChange",
+          "type": "(open: boolean) => void",
+          "required": false,
+          "description": "Callback when open state changes"
+        }
+      ],
+      "variants": [],
+      "slots": [
+        {
+          "name": "CollapsibleTrigger",
+          "required": true,
+          "description": "Clickable element that toggles visibility"
+        },
+        {
+          "name": "CollapsibleContent",
+          "required": true,
+          "description": "Content that shows/hides"
+        }
+      ],
+      "compositionRules": [
+        { "rule": "CollapsibleTrigger and CollapsibleContent must be inside Collapsible", "type": "requires" }
+      ],
+      "layout": {
+        "display": "block",
+        "acceptsChildren": false,
+        "childConstraints": ["CollapsibleTrigger", "CollapsibleContent"]
+      },
+      "examples": [
+        {
+          "title": "Basic collapsible",
+          "code": "<Collapsible>\n  <CollapsibleTrigger>Toggle</CollapsibleTrigger>\n  <CollapsibleContent>\n    <p>Hidden content</p>\n  </CollapsibleContent>\n</Collapsible>"
+        }
+      ],
+      "dataSlot": "collapsible"
+    },
+    {
+      "name": "CollapsibleSection",
+      "slug": "collapsible-section",
+      "description": "Pre-composed collapsible with title, chevron icon, and animation",
+      "category": "molecule",
+      "tags": ["interactive", "disclosure", "layout"],
+      "importStatement": "import { CollapsibleSection } from \"@startupos/ui\"",
+      "props": [
+        {
+          "name": "title",
+          "type": "string",
+          "required": true,
+          "description": "Section heading text"
+        },
+        {
+          "name": "defaultOpen",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "Whether section starts expanded"
+        },
+        {
+          "name": "variant",
+          "type": "\"default\" | \"compact\"",
+          "required": false,
+          "default": "\"default\"",
+          "description": "Size variant — compact uses smaller text and less padding"
+        }
+      ],
+      "variants": [],
+      "slots": [],
+      "compositionRules": [],
+      "layout": {
+        "display": "block",
+        "acceptsChildren": true,
+        "childConstraints": []
+      },
+      "examples": [
+        {
+          "title": "Default section",
+          "code": "<CollapsibleSection title=\"Details\" defaultOpen>\n  <p>Expandable content here</p>\n</CollapsibleSection>"
+        },
+        {
+          "title": "Compact variant",
+          "code": "<CollapsibleSection title=\"Advanced\" variant=\"compact\">\n  <p>Dense content</p>\n</CollapsibleSection>"
+        }
+      ],
+      "dataSlot": null
+    },
+    {
+      "name": "Popover",
+      "slug": "popover",
+      "description": "Floating content panel triggered by a button or element",
+      "category": "molecule",
+      "tags": ["overlay", "interactive", "disclosure"],
+      "importStatement": "import { Popover, PopoverTrigger, PopoverContent } from \"@startupos/ui\"",
+      "props": [],
+      "variants": [],
+      "slots": [
+        {
+          "name": "PopoverTrigger",
+          "required": true,
+          "description": "Element that opens the popover"
+        },
+        {
+          "name": "PopoverContent",
+          "required": true,
+          "description": "Floating content panel"
+        },
+        {
+          "name": "PopoverAnchor",
+          "required": false,
+          "description": "Alternative anchor element for positioning"
+        }
+      ],
+      "compositionRules": [
+        { "rule": "PopoverTrigger and PopoverContent must be inside Popover", "type": "requires" }
+      ],
+      "layout": {
+        "display": "inline",
+        "acceptsChildren": false,
+        "childConstraints": ["PopoverTrigger", "PopoverContent", "PopoverAnchor"]
+      },
+      "examples": [
+        {
+          "title": "Basic popover",
+          "code": "<Popover>\n  <PopoverTrigger asChild>\n    <Button variant=\"outline\">Open</Button>\n  </PopoverTrigger>\n  <PopoverContent>\n    <p>Popover content</p>\n  </PopoverContent>\n</Popover>"
+        }
+      ],
+      "dataSlot": "popover"
+    },
+    {
+      "name": "EmptyState",
+      "slug": "empty-state",
+      "description": "Centered placeholder for empty views with icon, message, and hint",
+      "category": "molecule",
+      "tags": ["display", "feedback", "placeholder"],
+      "importStatement": "import { EmptyState } from \"@startupos/ui\"",
+      "props": [
+        {
+          "name": "message",
+          "type": "string",
+          "required": true,
+          "description": "Primary message text"
+        },
+        {
+          "name": "hint",
+          "type": "string",
+          "required": false,
+          "description": "Secondary hint text below message"
+        },
+        {
+          "name": "icon",
+          "type": "ReactNode",
+          "required": false,
+          "description": "Icon element displayed above message"
+        }
+      ],
+      "variants": [],
+      "slots": [],
+      "compositionRules": [],
+      "layout": {
+        "display": "block",
+        "acceptsChildren": false,
+        "childConstraints": []
+      },
+      "examples": [
+        {
+          "title": "Empty list",
+          "code": "<EmptyState\n  icon={<Inbox className=\"h-8 w-8\" />}\n  message=\"No items yet\"\n  hint=\"Create your first item to get started\"\n/>"
+        }
+      ],
+      "dataSlot": "empty-state"
+    },
+    {
+      "name": "ErrorBanner",
+      "slug": "error-banner",
+      "description": "Red error message banner with icon",
+      "category": "molecule",
+      "tags": ["display", "feedback", "error"],
+      "importStatement": "import { ErrorBanner } from \"@startupos/ui\"",
+      "props": [
+        {
+          "name": "message",
+          "type": "string",
+          "required": true,
+          "description": "Error message text"
+        },
+        {
+          "name": "icon",
+          "type": "ReactNode",
+          "required": false,
+          "description": "Custom icon (defaults to AlertCircle)"
+        }
+      ],
+      "variants": [],
+      "slots": [],
+      "compositionRules": [],
+      "layout": {
+        "display": "block",
+        "acceptsChildren": false,
+        "childConstraints": []
+      },
+      "examples": [
+        {
+          "title": "Error banner",
+          "code": "<ErrorBanner message=\"Something went wrong. Please try again.\" />"
+        }
+      ],
+      "dataSlot": "error-banner"
+    },
+    {
+      "name": "LoadingSpinner",
+      "slug": "loading-spinner",
+      "description": "Centered loading indicator with optional message text",
+      "category": "molecule",
+      "tags": ["display", "loading", "feedback"],
+      "importStatement": "import { LoadingSpinner } from \"@startupos/ui\"",
+      "props": [
+        {
+          "name": "message",
+          "type": "string",
+          "required": false,
+          "description": "Loading message shown below spinner"
+        }
+      ],
+      "variants": [],
+      "slots": [],
+      "compositionRules": [],
+      "layout": {
+        "display": "block",
+        "acceptsChildren": false,
+        "childConstraints": []
+      },
+      "examples": [
+        {
+          "title": "With message",
+          "code": "<LoadingSpinner message=\"Loading data...\" />"
+        }
+      ],
+      "dataSlot": null
+    },
+    {
+      "name": "Dialog",
+      "slug": "dialog",
+      "description": "Modal dialog overlay with title, description, and close button",
+      "category": "organism",
+      "tags": ["overlay", "interactive", "modal"],
+      "importStatement": "import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from \"@startupos/ui\"",
+      "props": [
+        {
+          "name": "open",
+          "type": "boolean",
+          "required": false,
+          "description": "Controlled open state"
+        },
+        {
+          "name": "onOpenChange",
+          "type": "(open: boolean) => void",
+          "required": false,
+          "description": "Callback when open state changes"
+        }
+      ],
+      "variants": [],
+      "slots": [
+        {
+          "name": "DialogTrigger",
+          "required": false,
+          "description": "Element that opens the dialog"
+        },
+        {
+          "name": "DialogContent",
+          "required": true,
+          "description": "Modal content with overlay, auto-close button"
+        },
+        {
+          "name": "DialogHeader",
+          "required": false,
+          "description": "Header section for title and description"
+        },
+        {
+          "name": "DialogTitle",
+          "required": true,
+          "description": "Dialog heading (required for accessibility)"
+        },
+        {
+          "name": "DialogDescription",
+          "required": false,
+          "description": "Description text below title"
+        }
+      ],
+      "compositionRules": [
+        { "rule": "DialogContent must be inside Dialog", "type": "requires" },
+        { "rule": "DialogTitle is required for accessibility", "type": "requires" },
+        { "rule": "DialogTitle and DialogDescription must be inside DialogHeader", "type": "requires" },
+        { "rule": "Order inside DialogContent: DialogHeader → content → actions", "type": "ordering" }
+      ],
+      "layout": {
+        "display": "block",
+        "acceptsChildren": false,
+        "childConstraints": ["DialogTrigger", "DialogContent"]
+      },
+      "examples": [
+        {
+          "title": "Basic dialog",
+          "code": "<Dialog>\n  <DialogTrigger asChild>\n    <Button>Open</Button>\n  </DialogTrigger>\n  <DialogContent>\n    <DialogHeader>\n      <DialogTitle>Title</DialogTitle>\n      <DialogDescription>Description here.</DialogDescription>\n    </DialogHeader>\n    <p>Dialog body content</p>\n  </DialogContent>\n</Dialog>"
+        }
+      ],
+      "dataSlot": "dialog"
+    },
+    {
+      "name": "AlertDialog",
+      "slug": "alert-dialog",
+      "description": "Confirmation dialog with action and cancel buttons, requires explicit user response",
+      "category": "organism",
+      "tags": ["overlay", "interactive", "modal", "confirmation"],
+      "importStatement": "import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogAction, AlertDialogCancel } from \"@startupos/ui\"",
+      "props": [
+        {
+          "name": "open",
+          "type": "boolean",
+          "required": false,
+          "description": "Controlled open state"
+        },
+        {
+          "name": "onOpenChange",
+          "type": "(open: boolean) => void",
+          "required": false,
+          "description": "Callback when open state changes"
+        }
+      ],
+      "variants": [],
+      "slots": [
+        {
+          "name": "AlertDialogTrigger",
+          "required": false,
+          "description": "Element that opens the alert dialog"
+        },
+        {
+          "name": "AlertDialogContent",
+          "required": true,
+          "description": "Modal content with overlay"
+        },
+        {
+          "name": "AlertDialogHeader",
+          "required": true,
+          "description": "Header with title and description"
+        },
+        {
+          "name": "AlertDialogTitle",
+          "required": true,
+          "description": "Alert heading"
+        },
+        {
+          "name": "AlertDialogDescription",
+          "required": true,
+          "description": "Alert explanation text"
+        },
+        {
+          "name": "AlertDialogMedia",
+          "required": false,
+          "description": "Centered media section (icons, images)"
+        },
+        {
+          "name": "AlertDialogFooter",
+          "required": true,
+          "description": "Footer with action buttons"
+        },
+        {
+          "name": "AlertDialogAction",
+          "required": true,
+          "description": "Confirm button (accepts Button variant/size props)"
+        },
+        {
+          "name": "AlertDialogCancel",
+          "required": true,
+          "description": "Cancel button (defaults to outline variant)"
+        }
+      ],
+      "compositionRules": [
+        { "rule": "All slots must be inside AlertDialogContent", "type": "requires" },
+        { "rule": "Order: AlertDialogHeader → AlertDialogMedia → AlertDialogFooter", "type": "ordering" },
+        { "rule": "AlertDialogAction and AlertDialogCancel must be inside AlertDialogFooter", "type": "requires" }
+      ],
+      "layout": {
+        "display": "block",
+        "acceptsChildren": false,
+        "childConstraints": ["AlertDialogTrigger", "AlertDialogContent"]
+      },
+      "examples": [
+        {
+          "title": "Confirmation dialog",
+          "code": "<AlertDialog>\n  <AlertDialogTrigger asChild>\n    <Button variant=\"destructive\">Delete</Button>\n  </AlertDialogTrigger>\n  <AlertDialogContent>\n    <AlertDialogHeader>\n      <AlertDialogTitle>Are you sure?</AlertDialogTitle>\n      <AlertDialogDescription>This action cannot be undone.</AlertDialogDescription>\n    </AlertDialogHeader>\n    <AlertDialogFooter>\n      <AlertDialogCancel>Cancel</AlertDialogCancel>\n      <AlertDialogAction variant=\"destructive\">Delete</AlertDialogAction>\n    </AlertDialogFooter>\n  </AlertDialogContent>\n</AlertDialog>"
+        }
+      ],
+      "dataSlot": "alert-dialog"
+    },
+    {
+      "name": "Sheet",
+      "slug": "sheet",
+      "description": "Slide-in panel from screen edge with overlay",
+      "category": "organism",
+      "tags": ["overlay", "interactive", "panel"],
+      "importStatement": "import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle, SheetDescription } from \"@startupos/ui\"",
+      "props": [
+        {
+          "name": "open",
+          "type": "boolean",
+          "required": false,
+          "description": "Controlled open state"
+        },
+        {
+          "name": "onOpenChange",
+          "type": "(open: boolean) => void",
+          "required": false,
+          "description": "Callback when open state changes"
+        }
+      ],
+      "variants": [],
+      "slots": [
+        {
+          "name": "SheetTrigger",
+          "required": false,
+          "description": "Element that opens the sheet"
+        },
+        {
+          "name": "SheetContent",
+          "required": true,
+          "description": "Slide-in content panel"
+        },
+        {
+          "name": "SheetHeader",
+          "required": false,
+          "description": "Header section"
+        },
+        {
+          "name": "SheetTitle",
+          "required": true,
+          "description": "Sheet heading (required for accessibility)"
+        },
+        {
+          "name": "SheetDescription",
+          "required": false,
+          "description": "Description below title"
+        },
+        {
+          "name": "SheetFooter",
+          "required": false,
+          "description": "Footer with actions"
+        },
+        {
+          "name": "SheetClose",
+          "required": false,
+          "description": "Close trigger element"
+        }
+      ],
+      "compositionRules": [
+        { "rule": "SheetContent must be inside Sheet", "type": "requires" },
+        { "rule": "SheetTitle is required for accessibility", "type": "requires" },
+        { "rule": "SheetContent.side controls slide direction: top/bottom/left/right", "type": "configuration" }
+      ],
+      "layout": {
+        "display": "block",
+        "acceptsChildren": false,
+        "childConstraints": ["SheetTrigger", "SheetContent"]
+      },
+      "examples": [
+        {
+          "title": "Right sheet",
+          "code": "<Sheet>\n  <SheetTrigger asChild>\n    <Button variant=\"outline\">Open</Button>\n  </SheetTrigger>\n  <SheetContent>\n    <SheetHeader>\n      <SheetTitle>Settings</SheetTitle>\n      <SheetDescription>Adjust your preferences.</SheetDescription>\n    </SheetHeader>\n    <div className=\"py-4\">Sheet body</div>\n  </SheetContent>\n</Sheet>"
+        }
+      ],
+      "dataSlot": "sheet"
+    },
+    {
+      "name": "Tabs",
+      "slug": "tabs",
+      "description": "Tabbed navigation with content panels",
+      "category": "organism",
+      "tags": ["navigation", "interactive", "layout"],
+      "importStatement": "import { Tabs, TabsList, TabsTrigger, TabsContent } from \"@startupos/ui\"",
+      "props": [
+        {
+          "name": "defaultValue",
+          "type": "string",
+          "required": false,
+          "description": "Default active tab value"
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "required": false,
+          "description": "Controlled active tab value"
+        },
+        {
+          "name": "onValueChange",
+          "type": "(value: string) => void",
+          "required": false,
+          "description": "Callback when active tab changes"
+        },
+        {
+          "name": "orientation",
+          "type": "\"horizontal\" | \"vertical\"",
+          "required": false,
+          "default": "\"horizontal\"",
+          "description": "Layout direction"
+        }
+      ],
+      "variants": [],
+      "slots": [
+        {
+          "name": "TabsList",
+          "required": true,
+          "description": "Container for tab triggers with variant styling"
+        },
+        {
+          "name": "TabsTrigger",
+          "required": true,
+          "description": "Individual tab button with a value"
+        },
+        {
+          "name": "TabsContent",
+          "required": true,
+          "description": "Content panel associated with a tab value"
+        }
+      ],
+      "compositionRules": [
+        { "rule": "TabsTrigger must be inside TabsList", "type": "requires" },
+        { "rule": "TabsList and TabsContent must be inside Tabs", "type": "requires" },
+        { "rule": "Each TabsTrigger value must match a TabsContent value", "type": "requires" }
+      ],
+      "layout": {
+        "display": "block",
+        "acceptsChildren": false,
+        "childConstraints": ["TabsList", "TabsContent"]
+      },
+      "examples": [
+        {
+          "title": "Basic tabs",
+          "code": "<Tabs defaultValue=\"tab1\">\n  <TabsList>\n    <TabsTrigger value=\"tab1\">Tab 1</TabsTrigger>\n    <TabsTrigger value=\"tab2\">Tab 2</TabsTrigger>\n  </TabsList>\n  <TabsContent value=\"tab1\">Content 1</TabsContent>\n  <TabsContent value=\"tab2\">Content 2</TabsContent>\n</Tabs>"
+        }
+      ],
+      "dataSlot": "tabs"
+    },
+    {
+      "name": "Select",
+      "slug": "select",
+      "description": "Dropdown select input with searchable options",
+      "category": "organism",
+      "tags": ["form", "interactive", "selection"],
+      "importStatement": "import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from \"@startupos/ui\"",
+      "props": [
+        {
+          "name": "value",
+          "type": "string",
+          "required": false,
+          "description": "Controlled selected value"
+        },
+        {
+          "name": "onValueChange",
+          "type": "(value: string) => void",
+          "required": false,
+          "description": "Callback when selection changes"
+        },
+        {
+          "name": "defaultValue",
+          "type": "string",
+          "required": false,
+          "description": "Default uncontrolled value"
+        }
+      ],
+      "variants": [],
+      "slots": [
+        {
+          "name": "SelectTrigger",
+          "required": true,
+          "description": "Button that opens the select dropdown"
+        },
+        {
+          "name": "SelectValue",
+          "required": true,
+          "description": "Display of current selection (inside trigger)"
+        },
+        {
+          "name": "SelectContent",
+          "required": true,
+          "description": "Dropdown content panel"
+        },
+        {
+          "name": "SelectItem",
+          "required": true,
+          "description": "Individual selectable option with a value"
+        },
+        {
+          "name": "SelectGroup",
+          "required": false,
+          "description": "Group of related items"
+        },
+        {
+          "name": "SelectLabel",
+          "required": false,
+          "description": "Label for a SelectGroup"
+        },
+        {
+          "name": "SelectSeparator",
+          "required": false,
+          "description": "Divider between items or groups"
+        }
+      ],
+      "compositionRules": [
+        { "rule": "SelectTrigger and SelectContent must be inside Select", "type": "requires" },
+        { "rule": "SelectValue must be inside SelectTrigger", "type": "requires" },
+        { "rule": "SelectItem must be inside SelectContent", "type": "requires" },
+        { "rule": "SelectLabel must be inside SelectGroup", "type": "requires" }
+      ],
+      "layout": {
+        "display": "inline",
+        "acceptsChildren": false,
+        "childConstraints": ["SelectTrigger", "SelectContent"]
+      },
+      "examples": [
+        {
+          "title": "Basic select",
+          "code": "<Select>\n  <SelectTrigger className=\"w-48\">\n    <SelectValue placeholder=\"Choose...\" />\n  </SelectTrigger>\n  <SelectContent>\n    <SelectItem value=\"a\">Option A</SelectItem>\n    <SelectItem value=\"b\">Option B</SelectItem>\n    <SelectItem value=\"c\">Option C</SelectItem>\n  </SelectContent>\n</Select>"
+        }
+      ],
+      "dataSlot": "select"
+    },
+    {
+      "name": "DropdownMenu",
+      "slug": "dropdown-menu",
+      "description": "Context menu with items, checkboxes, radio groups, and submenus",
+      "category": "organism",
+      "tags": ["overlay", "interactive", "navigation", "action"],
+      "importStatement": "import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from \"@startupos/ui\"",
+      "props": [],
+      "variants": [],
+      "slots": [
+        {
+          "name": "DropdownMenuTrigger",
+          "required": true,
+          "description": "Element that opens the dropdown menu"
+        },
+        {
+          "name": "DropdownMenuContent",
+          "required": true,
+          "description": "Floating menu content"
+        },
+        {
+          "name": "DropdownMenuItem",
+          "required": false,
+          "description": "Clickable menu item"
+        },
+        {
+          "name": "DropdownMenuCheckboxItem",
+          "required": false,
+          "description": "Toggleable checkbox menu item"
+        },
+        {
+          "name": "DropdownMenuRadioGroup",
+          "required": false,
+          "description": "Group of radio items"
+        },
+        {
+          "name": "DropdownMenuRadioItem",
+          "required": false,
+          "description": "Radio selection menu item"
+        },
+        {
+          "name": "DropdownMenuLabel",
+          "required": false,
+          "description": "Non-interactive label text"
+        },
+        {
+          "name": "DropdownMenuSeparator",
+          "required": false,
+          "description": "Divider between menu sections"
+        },
+        {
+          "name": "DropdownMenuSub",
+          "required": false,
+          "description": "Container for a submenu"
+        },
+        {
+          "name": "DropdownMenuSubTrigger",
+          "required": false,
+          "description": "Item that opens a submenu"
+        },
+        {
+          "name": "DropdownMenuSubContent",
+          "required": false,
+          "description": "Submenu content panel"
+        },
+        {
+          "name": "DropdownMenuShortcut",
+          "required": false,
+          "description": "Keyboard shortcut hint text"
+        }
+      ],
+      "compositionRules": [
+        { "rule": "DropdownMenuTrigger and DropdownMenuContent must be inside DropdownMenu", "type": "requires" },
+        { "rule": "DropdownMenuSubTrigger and DropdownMenuSubContent must be inside DropdownMenuSub", "type": "requires" },
+        { "rule": "DropdownMenuRadioItem must be inside DropdownMenuRadioGroup", "type": "requires" }
+      ],
+      "layout": {
+        "display": "inline",
+        "acceptsChildren": false,
+        "childConstraints": ["DropdownMenuTrigger", "DropdownMenuContent"]
+      },
+      "examples": [
+        {
+          "title": "Basic menu",
+          "code": "<DropdownMenu>\n  <DropdownMenuTrigger asChild>\n    <Button variant=\"outline\">Actions</Button>\n  </DropdownMenuTrigger>\n  <DropdownMenuContent>\n    <DropdownMenuLabel>Options</DropdownMenuLabel>\n    <DropdownMenuSeparator />\n    <DropdownMenuItem>Edit</DropdownMenuItem>\n    <DropdownMenuItem>Duplicate</DropdownMenuItem>\n    <DropdownMenuItem variant=\"destructive\">Delete</DropdownMenuItem>\n  </DropdownMenuContent>\n</DropdownMenu>"
+        }
+      ],
+      "dataSlot": "dropdown-menu"
+    },
+    {
+      "name": "ScrollArea",
+      "slug": "scroll-area",
+      "description": "Custom scrollbar container with consistent cross-browser styling",
+      "category": "organism",
+      "tags": ["layout", "container", "scroll"],
+      "importStatement": "import { ScrollArea, ScrollBar } from \"@startupos/ui\"",
+      "props": [],
+      "variants": [],
+      "slots": [
+        {
+          "name": "ScrollBar",
+          "required": false,
+          "description": "Custom scrollbar, defaults to vertical. Use orientation prop for horizontal."
+        }
+      ],
+      "compositionRules": [
+        { "rule": "ScrollBar must be inside ScrollArea", "type": "requires" }
+      ],
+      "layout": {
+        "display": "block",
+        "acceptsChildren": true,
+        "childConstraints": []
+      },
+      "examples": [
+        {
+          "title": "Scrollable list",
+          "code": "<ScrollArea className=\"h-72\">\n  <div className=\"p-4\">\n    {items.map(item => <div key={item.id}>{item.name}</div>)}\n  </div>\n</ScrollArea>"
+        },
+        {
+          "title": "Horizontal scroll",
+          "code": "<ScrollArea className=\"w-full whitespace-nowrap\">\n  <div className=\"flex gap-4 p-4\">\n    {items.map(item => <Card key={item.id} />)}\n  </div>\n  <ScrollBar orientation=\"horizontal\" />\n</ScrollArea>"
+        }
+      ],
+      "dataSlot": "scroll-area"
+    },
+    {
+      "name": "Stack",
+      "slug": "stack",
+      "description": "Vertical flex container with gap, alignment, and justification props",
+      "category": "layout",
+      "tags": ["layout", "flex", "vertical"],
+      "importStatement": "import { Stack } from \"@startupos/ui\"",
+      "props": [
+        {
+          "name": "gap",
+          "type": "number",
+          "required": false,
+          "default": "4",
+          "description": "Tailwind gap unit (gap-N)"
+        },
+        {
+          "name": "align",
+          "type": "\"start\" | \"center\" | \"end\" | \"stretch\"",
+          "required": false,
+          "description": "Cross-axis alignment (items-*)"
+        },
+        {
+          "name": "justify",
+          "type": "\"start\" | \"center\" | \"end\" | \"between\"",
+          "required": false,
+          "description": "Main-axis justification (justify-*)"
+        }
+      ],
+      "variants": [],
+      "slots": [],
+      "compositionRules": [],
+      "layout": {
+        "display": "block",
+        "acceptsChildren": true,
+        "childConstraints": []
+      },
+      "examples": [
+        {
+          "title": "Vertical stack",
+          "code": "<Stack gap={4}>\n  <Input placeholder=\"Name\" />\n  <Input placeholder=\"Email\" />\n  <Button>Submit</Button>\n</Stack>"
+        }
+      ],
+      "dataSlot": "stack"
+    },
+    {
+      "name": "Flex",
+      "slug": "flex",
+      "description": "Horizontal flex container with gap, alignment, justification, and wrap",
+      "category": "layout",
+      "tags": ["layout", "flex", "horizontal"],
+      "importStatement": "import { Flex } from \"@startupos/ui\"",
+      "props": [
+        {
+          "name": "gap",
+          "type": "number",
+          "required": false,
+          "default": "4",
+          "description": "Tailwind gap unit (gap-N)"
+        },
+        {
+          "name": "align",
+          "type": "\"start\" | \"center\" | \"end\" | \"stretch\" | \"baseline\"",
+          "required": false,
+          "description": "Cross-axis alignment (items-*)"
+        },
+        {
+          "name": "justify",
+          "type": "\"start\" | \"center\" | \"end\" | \"between\" | \"around\" | \"evenly\"",
+          "required": false,
+          "description": "Main-axis justification (justify-*)"
+        },
+        {
+          "name": "wrap",
+          "type": "boolean",
+          "required": false,
+          "description": "Enable flex-wrap"
+        }
+      ],
+      "variants": [],
+      "slots": [],
+      "compositionRules": [],
+      "layout": {
+        "display": "block",
+        "acceptsChildren": true,
+        "childConstraints": []
+      },
+      "examples": [
+        {
+          "title": "Button row",
+          "code": "<Flex gap={3} justify=\"end\">\n  <Button variant=\"outline\">Cancel</Button>\n  <Button>Save</Button>\n</Flex>"
+        }
+      ],
+      "dataSlot": "flex"
+    },
+    {
+      "name": "ResponsiveGrid",
+      "slug": "responsive-grid",
+      "description": "CSS grid with auto-fill columns that adapts to container width",
+      "category": "layout",
+      "tags": ["layout", "grid", "responsive"],
+      "importStatement": "import { ResponsiveGrid } from \"@startupos/ui\"",
+      "props": [
+        {
+          "name": "minChildWidth",
+          "type": "string",
+          "required": false,
+          "default": "\"16rem\"",
+          "description": "Minimum width for each grid child (CSS value)"
+        },
+        {
+          "name": "gap",
+          "type": "number",
+          "required": false,
+          "default": "4",
+          "description": "Tailwind gap unit (gap-N)"
+        }
+      ],
+      "variants": [],
+      "slots": [],
+      "compositionRules": [],
+      "layout": {
+        "display": "block",
+        "acceptsChildren": true,
+        "childConstraints": []
+      },
+      "examples": [
+        {
+          "title": "Card grid",
+          "code": "<ResponsiveGrid minChildWidth=\"20rem\" gap={6}>\n  <Card>...</Card>\n  <Card>...</Card>\n  <Card>...</Card>\n</ResponsiveGrid>"
+        }
+      ],
+      "dataSlot": "responsive-grid"
+    },
+    {
+      "name": "AnimatedNumber",
+      "slug": "animated-number",
+      "description": "Spring-animated number display using framer-motion. Smoothly interpolates between values.",
+      "category": "atom",
+      "tags": ["animation", "number", "display", "motion"],
+      "importStatement": "import { AnimatedNumber } from \"@startupos/ui\"",
+      "props": [
+        { "name": "value", "type": "number", "required": true, "description": "Target numeric value to animate towards" },
+        { "name": "format", "type": "(n: number) => string", "required": false, "default": "Math.round(n).toLocaleString()", "description": "Format function applied to the animated value" },
+        { "name": "className", "type": "string", "required": false, "description": "CSS class for the span element" }
+      ],
+      "variants": [],
+      "slots": [],
+      "compositionRules": [],
+      "layout": { "display": "inline", "acceptsChildren": false, "childConstraints": [] },
+      "examples": [
+        { "title": "Basic counter", "code": "<AnimatedNumber value={1234} />" }
+      ],
+      "dataSlot": "animated-number"
+    },
+    {
+      "name": "StatusDot",
+      "slug": "status-dot",
+      "description": "Pulsing status indicator dot with optional label. Shows online, offline, warning, or error states.",
+      "category": "atom",
+      "tags": ["status", "indicator", "dot", "pulse"],
+      "importStatement": "import { StatusDot } from \"@startupos/ui\"",
+      "props": [
+        { "name": "status", "type": "\"online\" | \"offline\" | \"warning\" | \"error\"", "required": false, "default": "\"online\"", "description": "Status state determining dot color" },
+        { "name": "label", "type": "string", "required": false, "description": "Optional text label displayed next to the dot" },
+        { "name": "className", "type": "string", "required": false, "description": "CSS class for the wrapper span" }
+      ],
+      "variants": [],
+      "slots": [],
+      "compositionRules": [],
+      "layout": { "display": "inline-flex", "acceptsChildren": false, "childConstraints": [] },
+      "examples": [
+        { "title": "Status indicators", "code": "<div className=\"flex gap-4\"><StatusDot status=\"online\" label=\"Online\" /><StatusDot status=\"error\" label=\"Error\" /></div>" }
+      ],
+      "dataSlot": "status-dot"
+    },
+    {
+      "name": "Pressable",
+      "slug": "pressable",
+      "description": "Wraps any element with a spring-based tap/press scale animation.",
+      "category": "atom",
+      "tags": ["animation", "interaction", "press", "motion"],
+      "importStatement": "import { Pressable } from \"@startupos/ui\"",
+      "props": [
+        { "name": "children", "type": "ReactNode", "required": true, "description": "Content to wrap" },
+        { "name": "as", "type": "ElementType", "required": false, "default": "\"div\"", "description": "HTML element to render" },
+        { "name": "className", "type": "string", "required": false, "description": "CSS class for the wrapper" }
+      ],
+      "variants": [],
+      "slots": [],
+      "compositionRules": [],
+      "layout": { "display": "block", "acceptsChildren": true, "childConstraints": [] },
+      "examples": [
+        { "title": "Pressable card", "code": "<Pressable><Card><CardContent className=\"p-4\">Press me</CardContent></Card></Pressable>" }
+      ],
+      "dataSlot": "pressable"
+    },
+    {
+      "name": "FadeIn",
+      "slug": "fade-in",
+      "description": "Entrance animation wrapper with stagger support and directional offset.",
+      "category": "molecule",
+      "tags": ["animation", "entrance", "fade", "stagger", "motion"],
+      "importStatement": "import { FadeIn } from \"@startupos/ui\"",
+      "props": [
+        { "name": "children", "type": "ReactNode", "required": true, "description": "Content to animate" },
+        { "name": "index", "type": "number", "required": false, "default": "0", "description": "Stagger index — each increment adds 60ms delay" },
+        { "name": "direction", "type": "\"up\" | \"down\" | \"left\" | \"right\" | \"none\"", "required": false, "default": "\"up\"", "description": "Direction the element enters from" },
+        { "name": "duration", "type": "number", "required": false, "default": "0.4", "description": "Animation duration in seconds" },
+        { "name": "className", "type": "string", "required": false, "description": "CSS class for the wrapper div" }
+      ],
+      "variants": [],
+      "slots": [],
+      "compositionRules": [],
+      "layout": { "display": "block", "acceptsChildren": true, "childConstraints": [] },
+      "examples": [
+        { "title": "Staggered list", "code": "<div className=\"flex gap-3\">{[0,1,2].map(i => <FadeIn key={i} index={i}><Badge>Item {i}</Badge></FadeIn>)}</div>" }
+      ],
+      "dataSlot": "fade-in"
+    },
+    {
+      "name": "StatCard",
+      "slug": "stat-card",
+      "description": "Glass-morphism metric card with icon, label, and value. Supports staggered fade-up animation.",
+      "category": "molecule",
+      "tags": ["card", "stat", "metric", "glass", "dashboard"],
+      "importStatement": "import { StatCard } from \"@startupos/ui\"",
+      "props": [
+        { "name": "icon", "type": "ReactNode", "required": false, "description": "Icon element displayed before the label" },
+        { "name": "label", "type": "string", "required": true, "description": "Metric label text" },
+        { "name": "value", "type": "ReactNode", "required": true, "description": "Metric value — can be text or an AnimatedNumber" },
+        { "name": "index", "type": "number", "required": false, "default": "0", "description": "Animation stagger index — each increment adds 80ms delay" },
+        { "name": "className", "type": "string", "required": false, "description": "CSS class for the card" }
+      ],
+      "variants": [],
+      "slots": [],
+      "compositionRules": [
+        { "type": "suggestion", "rule": "Combine with AnimatedNumber for the value prop to get animated metrics" }
+      ],
+      "layout": { "display": "block", "acceptsChildren": false, "childConstraints": [] },
+      "examples": [
+        { "title": "Dashboard row", "code": "<div className=\"grid grid-cols-3 gap-4\"><StatCard label=\"Tasks\" value=\"42\" index={0} /><StatCard label=\"Agents\" value=\"8\" index={1} /><StatCard label=\"Uptime\" value=\"99.9%\" index={2} /></div>" }
+      ],
+      "dataSlot": "stat-card"
+    },
+    {
+      "name": "NetworkBackground",
+      "slug": "network-background",
+      "description": "Decorative SVG background with deterministic pseudo-random nodes and connection lines. CSS-animated drift.",
+      "category": "molecule",
+      "tags": ["background", "decoration", "svg", "network", "ambient"],
+      "importStatement": "import { NetworkBackground } from \"@startupos/ui\"",
+      "props": [
+        { "name": "nodeCount", "type": "number", "required": false, "default": "25", "description": "Number of nodes to render" },
+        { "name": "connectionDistance", "type": "number", "required": false, "default": "25", "description": "Maximum distance (%) between connected nodes" },
+        { "name": "className", "type": "string", "required": false, "description": "CSS class for the container" }
+      ],
+      "variants": [],
+      "slots": [],
+      "compositionRules": [
+        { "type": "requirement", "rule": "Parent must have position: relative for absolute positioning to work" }
+      ],
+      "layout": { "display": "block", "acceptsChildren": false, "childConstraints": [] },
+      "examples": [
+        { "title": "Hero section background", "code": "<div className=\"relative h-48 rounded-lg border\"><NetworkBackground /><div className=\"absolute inset-0 flex items-center justify-center\"><p>Content on top</p></div></div>" }
+      ],
+      "dataSlot": "network-background"
+    },
+    {
+      "name": "PageTransition",
+      "slug": "page-transition",
+      "description": "Route-aware fade transition using AnimatePresence. Coarsens pathname to top-2 segments to avoid sub-route flicker.",
+      "category": "molecule",
+      "tags": ["animation", "transition", "route", "page", "motion"],
+      "importStatement": "import { PageTransition } from \"@startupos/ui\"",
+      "props": [
+        { "name": "children", "type": "ReactNode", "required": true, "description": "Page content to transition" },
+        { "name": "pathname", "type": "string", "required": true, "description": "Current route pathname — used as animation key" },
+        { "name": "className", "type": "string", "required": false, "description": "CSS class for the motion wrapper" }
+      ],
+      "variants": [],
+      "slots": [],
+      "compositionRules": [
+        { "type": "suggestion", "rule": "Wrap with StartupOSMotionConfig to respect prefers-reduced-motion" }
+      ],
+      "layout": { "display": "block", "acceptsChildren": true, "childConstraints": [] },
+      "examples": [
+        { "title": "Router wrapper", "code": "<PageTransition pathname=\"/chat\"><div>Page content</div></PageTransition>" }
+      ],
+      "dataSlot": "page-transition"
+    },
+    {
+      "name": "StartupOSMotionConfig",
+      "slug": "motion-config",
+      "description": "Framer Motion configuration provider that respects prefers-reduced-motion. Wrap your app root.",
+      "category": "molecule",
+      "tags": ["motion", "config", "a11y", "provider"],
+      "importStatement": "import { StartupOSMotionConfig } from \"@startupos/ui\"",
+      "props": [
+        { "name": "children", "type": "ReactNode", "required": true, "description": "Application content" }
+      ],
+      "variants": [],
+      "slots": [],
+      "compositionRules": [
+        { "type": "suggestion", "rule": "Place at the root of your application, wrapping all motion-enabled components" }
+      ],
+      "layout": { "display": "block", "acceptsChildren": true, "childConstraints": [] },
+      "examples": [
+        { "title": "App root", "code": "<StartupOSMotionConfig><div>Your app</div></StartupOSMotionConfig>" }
+      ],
+      "dataSlot": "motion-config"
+    }
+  ]
+}

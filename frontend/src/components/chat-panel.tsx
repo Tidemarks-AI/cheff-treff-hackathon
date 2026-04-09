@@ -1,14 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react"
 import { Send, Square, Mic, MicOff, Loader2, Bot, User } from "lucide-react"
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet"
+import { cn, Button, Textarea, Sheet, SheetContent, SheetHeader, SheetTitle } from "@startupos/ui"
 import { streamAgent } from "@/lib/api"
 import { useVoiceInput } from "@/hooks/use-voice-input"
 

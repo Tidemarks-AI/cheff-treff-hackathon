@@ -3,35 +3,14 @@ import { supabase } from "@/lib/supabase"
 import { toast } from "sonner"
 import { Plus } from "lucide-react"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableRow,
-  TableHead,
-  TableCell,
-} from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from "@/components/ui/select"
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  DialogClose,
-} from "@/components/ui/dialog"
+  Card, CardContent, CardHeader, CardTitle,
+  Tabs, TabsList, TabsTrigger, TabsContent,
+  Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
+  Badge, Button, Input, Label,
+  Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
+} from "@startupos/ui"
 
 type CostCenter = { id: string; name: string }
 type Variance = {
@@ -265,15 +244,15 @@ export default function Finance() {
       </div>
 
       {/* Tabs */}
-      <Tabs defaultValue={0}>
+      <Tabs defaultValue="overview">
         <TabsList>
-          <TabsTrigger value={0}>Overview</TabsTrigger>
-          <TabsTrigger value={1}>Fixed Costs</TabsTrigger>
-          <TabsTrigger value={2}>Detail</TabsTrigger>
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="fixed-costs">Fixed Costs</TabsTrigger>
+          <TabsTrigger value="detail">Detail</TabsTrigger>
         </TabsList>
 
         {/* Overview Tab */}
-        <TabsContent value={0}>
+        <TabsContent value="overview">
           <Card>
             <CardHeader>
               <CardTitle>Variance Summary</CardTitle>
@@ -320,7 +299,7 @@ export default function Finance() {
         </TabsContent>
 
         {/* Fixed Costs Tab */}
-        <TabsContent value={1}>
+        <TabsContent value="fixed-costs">
           <Card>
             <CardHeader>
               <CardTitle>Recurring Fixed Costs</CardTitle>
@@ -361,7 +340,7 @@ export default function Finance() {
         </TabsContent>
 
         {/* Detail Tab */}
-        <TabsContent value={2}>
+        <TabsContent value="detail">
           <div className="space-y-4">
             <div className="flex items-center gap-4">
               <Select
@@ -548,14 +527,12 @@ export default function Finance() {
                 placeholder="Optional description"
               />
             </div>
-            <DialogFooter>
-              <DialogClose>
-                <Button type="button" variant="outline">
-                  Cancel
-                </Button>
-              </DialogClose>
+            <div className="flex justify-end gap-2 pt-4">
+              <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
+                Cancel
+              </Button>
               <Button type="submit">Add</Button>
-            </DialogFooter>
+            </div>
           </form>
         </DialogContent>
       </Dialog>

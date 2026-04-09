@@ -1,0 +1,124 @@
+/*
+ * StartupOS Design Tokens — Dieter Rams / Braun inspired
+ * Warm beige, subtle glass, "schlicht" (understated)
+ */
+
+:root {
+  --radius: 0.5rem;
+
+  /* ── Light mode — warm off-white / cream / sand ─────────────── */
+  --background: oklch(0.975 0.007 80);
+  --foreground: oklch(0.175 0.012 55);
+  --card: oklch(0.985 0.005 80);
+  --card-foreground: oklch(0.175 0.012 55);
+  --popover: oklch(0.985 0.005 80);
+  --popover-foreground: oklch(0.175 0.012 55);
+  --primary: oklch(0.25 0.015 55);
+  --primary-foreground: oklch(0.975 0.007 80);
+  --secondary: oklch(0.94 0.012 80);
+  --secondary-foreground: oklch(0.25 0.015 55);
+  --muted: oklch(0.94 0.010 80);
+  --muted-foreground: oklch(0.45 0.012 55);
+  --accent: oklch(0.94 0.012 80);
+  --accent-foreground: oklch(0.25 0.015 55);
+  --destructive: oklch(0.55 0.18 25);
+  --border: oklch(0.90 0.010 80);
+  --input: oklch(0.90 0.010 80);
+  --ring: oklch(0.45 0.012 55);
+
+  /* ── Charts ─────────────────────────────────────────────────── */
+  --chart-1: oklch(0.55 0.10 230);
+  --chart-2: oklch(0.60 0.10 160);
+  --chart-3: oklch(0.55 0.08 55);
+  --chart-4: oklch(0.65 0.12 280);
+  --chart-5: oklch(0.60 0.08 25);
+
+  /* ── Sidebar ────────────────────────────────────────────────── */
+  --sidebar: oklch(0.97 0.005 80);
+  --sidebar-foreground: oklch(0.175 0.012 55);
+  --sidebar-primary: oklch(0.25 0.015 55);
+  --sidebar-primary-foreground: oklch(0.975 0.007 80);
+  --sidebar-accent: oklch(0.94 0.012 80);
+  --sidebar-accent-foreground: oklch(0.25 0.015 55);
+  --sidebar-border: oklch(0.90 0.010 80);
+  --sidebar-ring: oklch(0.45 0.012 55);
+
+  /* ── Glass ──────────────────────────────────────────────────── */
+  --glass-bg: oklch(0.985 0.005 80 / 70%);
+  --glass-border: oklch(0.90 0.010 80 / 50%);
+  --glass-blur: 12px;
+
+  /* ── Semantic status ────────────────────────────────────────── */
+  --success: oklch(0.55 0.15 155);
+  --warning: oklch(0.70 0.15 75);
+  --info: oklch(0.55 0.10 230);
+}
+
+.dark {
+  --background: oklch(0.175 0.012 55);
+  --foreground: oklch(0.93 0.008 80);
+  --card: oklch(0.22 0.012 55);
+  --card-foreground: oklch(0.93 0.008 80);
+  --popover: oklch(0.22 0.012 55);
+  --popover-foreground: oklch(0.93 0.008 80);
+  --primary: oklch(0.90 0.010 80);
+  --primary-foreground: oklch(0.22 0.012 55);
+  --secondary: oklch(0.28 0.012 55);
+  --secondary-foreground: oklch(0.93 0.008 80);
+  --muted: oklch(0.28 0.012 55);
+  --muted-foreground: oklch(0.65 0.008 80);
+  --accent: oklch(0.28 0.012 55);
+  --accent-foreground: oklch(0.93 0.008 80);
+  --destructive: oklch(0.65 0.18 25);
+  --border: oklch(0.93 0.008 80 / 8%);
+  --input: oklch(0.93 0.008 80 / 12%);
+  --ring: oklch(0.55 0.008 80);
+
+  /* ── Charts (dark) ──────────────────────────────────────────── */
+  --chart-1: oklch(0.60 0.15 230);
+  --chart-2: oklch(0.65 0.12 160);
+  --chart-3: oklch(0.65 0.10 75);
+  --chart-4: oklch(0.65 0.15 280);
+  --chart-5: oklch(0.60 0.12 25);
+
+  /* ── Sidebar (dark) ─────────────────────────────────────────── */
+  --sidebar: oklch(0.22 0.012 55);
+  --sidebar-foreground: oklch(0.93 0.008 80);
+  --sidebar-primary: oklch(0.60 0.15 230);
+  --sidebar-primary-foreground: oklch(0.93 0.008 80);
+  --sidebar-accent: oklch(0.28 0.012 55);
+  --sidebar-accent-foreground: oklch(0.93 0.008 80);
+  --sidebar-border: oklch(0.93 0.008 80 / 8%);
+  --sidebar-ring: oklch(0.55 0.008 80);
+
+  /* ── Glass (dark) ───────────────────────────────────────────── */
+  --glass-bg: oklch(0.22 0.012 55 / 60%);
+  --glass-border: oklch(0.93 0.008 80 / 6%);
+  --glass-blur: 12px;
+
+  /* ── Semantic status (dark) ─────────────────────────────────── */
+  --success: oklch(0.65 0.15 155);
+  --warning: oklch(0.75 0.15 75);
+  --info: oklch(0.60 0.15 230);
+}
+
+/* ── Glass utilities ──────────────────────────────────────────── */
+
+@utility glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+}
+
+@utility glass-subtle {
+  background: var(--glass-bg);
+  backdrop-filter: blur(8px);
+}
+
+/* ── Typography ───────────────────────────────────────────────── */
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}

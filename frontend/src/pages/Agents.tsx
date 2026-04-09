@@ -1,22 +1,13 @@
 import { useEffect, useRef, useState } from "react"
+import { Bot, CheckCircle, XCircle, ShieldCheck, Inbox, Plus, Trash2, Loader2 } from "lucide-react"
 
-import { Button } from "@/components/ui/button"
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { Textarea } from "@/components/ui/textarea"
+  Button, Badge, Card, CardContent, CardDescription, CardHeader, CardTitle,
+  Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Textarea,
+  Tabs, TabsList, TabsTrigger, TabsContent,
+  EmptyState, ErrorBanner, ApprovalCard, StatusBadge,
+  GlassCard, GlassCardHeader, GlassCardContent, Separator, Label,
+} from "@startupos/ui"
 import {
   acceptPendingApproval,
   createPolicy,
@@ -157,6 +148,283 @@ function buildPolicyPayload(form: PolicyFormState, functionDefinition: FunctionD
   }
 }
 
+// --- Subcomponents ---
+
+function ConditionRow({
+  condition,
+  index,
+  functionDefinition,
+  scope,
+  formKey,
+  canRemove,
+  onConditionChange,
+  onRemove,
+}: {
+  condition: PolicyConditionForm
+  index: number
+  functionDefinition: FunctionDefinition
+  scope: "new" | "existing"
+  formKey: string
+  canRemove: boolean
+  onConditionChange: (
+    scope: "new" | "existing",
+    key: string,
+    functionDefinition: FunctionDefinition,
+    conditionId: string,
+    field: "field" | "operator" | "value",
+    value: string
+  ) => void
+  onRemove: (
+    scope: "new" | "existing",
+    key: string,
+    functionDefinition: FunctionDefinition,
+    conditionId: string
+  ) => void
+}) {
+  const operators = getOperatorOptions(functionDefinition, condition.field)
+
+  return (
+    <div className="grid gap-3 md:grid-cols-[1fr_1fr_1fr_auto] items-end">
+      <div className="space-y-1.5">
+        <Label className="text-xs">Condition {index + 1} field</Label>
+        <Select
+          value={condition.field}
+          onValueChange={(value) =>
+            onConditionChange(scope, formKey, functionDefinition, condition.id, "field", value ?? "")
+          }
+        >
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Select field" />
+          </SelectTrigger>
+          <SelectContent>
+            {functionDefinition.policyFields.map((field) => (
+              <SelectItem key={field.name} value={field.name}>
+                {field.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="space-y-1.5">
+        <Label className="text-xs">Operator</Label>
+        <Select
+          value={condition.operator}
+          onValueChange={(value) =>
+            onConditionChange(scope, formKey, functionDefinition, condition.id, "operator", value ?? "eq")
+          }
+        >
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Select operator" />
+          </SelectTrigger>
+          <SelectContent>
+            {operators.map((operator) => (
+              <SelectItem key={operator} value={operator}>
+                {operatorLabels[operator]}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="space-y-1.5">
+        <Label className="text-xs">Value</Label>
+        <Input
+          value={condition.value}
+          onChange={(event) =>
+            onConditionChange(scope, formKey, functionDefinition, condition.id, "value", event.target.value)
+          }
+          placeholder="Policy value"
+        />
+      </div>
+      <Button
+        variant="outline"
+        size="icon"
+        onClick={() => onRemove(scope, formKey, functionDefinition, condition.id)}
+        disabled={!canRemove}
+        title="Remove condition"
+      >
+        <Trash2 className="h-4 w-4" />
+      </Button>
+    </div>
+  )
+}
+
+function PolicyForm({
+  form,
+  scope,
+  formKey,
+  functionDefinition,
+  savingPolicyKey,
+  savingKeyPrefix,
+  submitLabel,
+  submitLoadingLabel,
+  onMetaChange,
+  onConditionChange,
+  onAddCondition,
+  onRemoveCondition,
+  onSubmit,
+  onDelete,
+}: {
+  form: PolicyFormState
+  scope: "new" | "existing"
+  formKey: string
+  functionDefinition: FunctionDefinition
+  savingPolicyKey: string | null
+  savingKeyPrefix: string
+  submitLabel: string
+  submitLoadingLabel: string
+  onMetaChange: (
+    scope: "new" | "existing",
+    key: string,
+    functionDefinition: FunctionDefinition,
+    field: "action" | "conditionGroup" | "enabled",
+    value: PolicyAction | PolicyConditionGroup | boolean
+  ) => void
+  onConditionChange: (
+    scope: "new" | "existing",
+    key: string,
+    functionDefinition: FunctionDefinition,
+    conditionId: string,
+    field: "field" | "operator" | "value",
+    value: string
+  ) => void
+  onAddCondition: (scope: "new" | "existing", key: string, functionDefinition: FunctionDefinition) => void
+  onRemoveCondition: (
+    scope: "new" | "existing",
+    key: string,
+    functionDefinition: FunctionDefinition,
+    conditionId: string
+  ) => void
+  onSubmit: () => void
+  onDelete?: () => void
+}) {
+  const isSaving = savingPolicyKey === `${savingKeyPrefix}:${formKey}`
+  const isDeleting = savingPolicyKey === `delete:${formKey}`
+
+  return (
+    <GlassCard>
+      <GlassCardContent className="space-y-4">
+        <div className="grid gap-3 md:grid-cols-3">
+          <div className="space-y-1.5">
+            <Label className="text-xs">Action</Label>
+            <Select
+              value={form.action}
+              onValueChange={(value) =>
+                onMetaChange(scope, formKey, functionDefinition, "action", (value ?? "auto_allow") as PolicyAction)
+              }
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select action" />
+              </SelectTrigger>
+              <SelectContent>
+                {(Object.keys(actionLabels) as PolicyAction[]).map((action) => (
+                  <SelectItem key={action} value={action}>
+                    {actionLabels[action]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs">Match mode</Label>
+            <Select
+              value={form.conditionGroup}
+              onValueChange={(value) =>
+                onMetaChange(scope, formKey, functionDefinition, "conditionGroup", (value ?? "all") as PolicyConditionGroup)
+              }
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select match mode" />
+              </SelectTrigger>
+              <SelectContent>
+                {(Object.keys(conditionGroupLabels) as PolicyConditionGroup[]).map((cg) => (
+                  <SelectItem key={cg} value={cg}>
+                    {conditionGroupLabels[cg]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs">State</Label>
+            <Select
+              value={form.enabled ? "enabled" : "disabled"}
+              onValueChange={(value) =>
+                onMetaChange(scope, formKey, functionDefinition, "enabled", value === "enabled")
+              }
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select state" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="enabled">Enabled</SelectItem>
+                <SelectItem value="disabled">Disabled</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <Separator />
+
+        <div className="space-y-3">
+          {form.conditions.map((condition, index) => (
+            <ConditionRow
+              key={condition.id}
+              condition={condition}
+              index={index}
+              functionDefinition={functionDefinition}
+              scope={scope}
+              formKey={formKey}
+              canRemove={form.conditions.length > 1}
+              onConditionChange={onConditionChange}
+              onRemove={onRemoveCondition}
+            />
+          ))}
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onAddCondition(scope, formKey, functionDefinition)}
+            disabled={savingPolicyKey !== null}
+          >
+            <Plus className="mr-1.5 h-3.5 w-3.5" />
+            Add condition
+          </Button>
+          <Button
+            size="sm"
+            onClick={onSubmit}
+            disabled={savingPolicyKey !== null}
+          >
+            {isSaving ? (
+              <><Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />{submitLoadingLabel}</>
+            ) : (
+              submitLabel
+            )}
+          </Button>
+          {onDelete && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onDelete}
+              disabled={savingPolicyKey !== null}
+              className="text-destructive hover:text-destructive"
+            >
+              {isDeleting ? (
+                <><Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />Deleting...</>
+              ) : (
+                <><Trash2 className="mr-1.5 h-3.5 w-3.5" />Delete</>
+              )}
+            </Button>
+          )}
+        </div>
+      </GlassCardContent>
+    </GlassCard>
+  )
+}
+
+// --- Main Page ---
+
 export default function Agents() {
   const [agents, setAgents] = useState<AgentListItem[]>([])
   const [functions, setFunctions] = useState<FunctionDefinition[]>([])
@@ -208,6 +476,8 @@ export default function Agents() {
   }, [])
 
   const selectedAgent = agents.find((agent) => agent.id === selectedAgentId)
+  const mutatingFunctions = functions.filter((f) => f.access === "mutating")
+  const readOnlyFunctions = functions.filter((f) => f.access !== "mutating")
 
   function handleAgentChange(value: string | null) {
     setSelectedAgentId(value ?? "")
@@ -450,597 +720,292 @@ export default function Agents() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-4xl">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Agents Workspace</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Admin</h1>
         <p className="text-muted-foreground">
-          Run backend OpenAI agents directly from the frontend.
+          Manage agents, approve tool calls, and configure function policies.
         </p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Agent Runner</CardTitle>
-          <CardDescription>
-            Select an agent, send a prompt, and approve mutating tool calls before they run.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid gap-4 lg:grid-cols-[240px_1fr]">
-            <div className="space-y-2">
-              <div className="text-sm font-medium">Agent</div>
-              <Select value={selectedAgentId || null} onValueChange={handleAgentChange}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select an agent" />
-                </SelectTrigger>
-                <SelectContent>
-                  {agents.map((agent) => (
-                    <SelectItem key={agent.id} value={agent.id}>
-                      {agent.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {selectedAgent ? (
-                <div className="text-sm text-muted-foreground">
-                  {selectedAgent.description}
-                  <br />
-                  Model: {selectedAgent.model}
-                  <br />
-                  Tools: {selectedAgent.tools.join(", ")}
-                </div>
-              ) : null}
-            </div>
+      {error && <ErrorBanner message={error} />}
 
-            <div className="space-y-3">
-              <Textarea
-                value={message}
-                onChange={(event) => setMessage(event.target.value)}
-                placeholder="Ask an agent something useful"
-                disabled={isRunning}
-              />
-              <div className="flex items-center gap-3">
-                <Button disabled={isRunning || !selectedAgentId} onClick={handleSubmit}>
-                  {isRunning ? "Running..." : "Run agent"}
-                </Button>
-                {error ? <span className="text-sm text-destructive">{error}</span> : null}
-              </div>
-              <div className="rounded-lg border border-border bg-muted/30 p-4 text-sm whitespace-pre-wrap">
-                {reply || "The agent response will appear here."}
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <Tabs defaultValue="runner">
+        <TabsList variant="line">
+          <TabsTrigger value="runner">
+            <Bot className="mr-1.5 h-4 w-4" />
+            Agent Runner
+          </TabsTrigger>
+          <TabsTrigger value="approvals">
+            <Inbox className="mr-1.5 h-4 w-4" />
+            Approvals
+            {pendingApprovals.length > 0 && (
+              <Badge variant="destructive" className="ml-1.5">{pendingApprovals.length}</Badge>
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="policies">
+            <ShieldCheck className="mr-1.5 h-4 w-4" />
+            Policies
+          </TabsTrigger>
+        </TabsList>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Pending Approvals</CardTitle>
-          <CardDescription>
-            Mutating functions stay here until a human explicitly approves them.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {pendingApprovals.length === 0 ? (
-            <div className="rounded-lg border border-dashed border-border p-4 text-sm text-muted-foreground">
-              No pending approvals.
-            </div>
-          ) : (
-            pendingApprovals.map((approval) => (
-              <div key={approval.id} className="space-y-3 rounded-lg border border-border p-4">
-                <div className="space-y-1">
-                  <div className="text-sm font-medium">{approval.toolName}</div>
-                  <div className="text-sm text-muted-foreground">{approval.description}</div>
-                  <div className="text-xs text-muted-foreground">
-                    Agent: {approval.agentId} · Created: {new Date(approval.createdAt).toLocaleString()}
-                  </div>
-                </div>
-                <pre className="overflow-x-auto rounded-md bg-muted/50 p-3 text-xs whitespace-pre-wrap">
-                  {formatParameters(approval.parameters)}
-                </pre>
-                <div className="flex gap-2">
-                  <Button
-                    onClick={() => handleResolveApproval(approval.id, "allow")}
-                    disabled={resolvingApprovalId !== null}
-                  >
-                    {resolvingApprovalId === approval.id ? "Resolving..." : "Accept"}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => handleResolveApproval(approval.id, "deny")}
-                    disabled={resolvingApprovalId !== null}
-                  >
-                    {resolvingApprovalId === approval.id ? "Resolving..." : "Deny"}
-                  </Button>
-                </div>
-              </div>
-            ))
-          )}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Function Policies</CardTitle>
-          <CardDescription>
-            Create multi-condition auto-allow or auto-deny rules for mutating backend functions.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {functions.map((functionDefinition) => {
-            const functionPolicies = policies.filter(
-              (policy) => policy.toolName === functionDefinition.name
-            )
-            const newPolicyForm =
-              newPolicyForms[functionDefinition.name] ?? createDefaultPolicyForm(functionDefinition)
-
-            return (
-              <div
-                key={functionDefinition.name}
-                className="space-y-4 rounded-lg border border-border p-4"
-              >
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="text-sm font-medium">{functionDefinition.name}</div>
-                    <div className="text-xs uppercase tracking-wide text-muted-foreground">
-                      {functionDefinition.access === "mutating" ? "Mutating" : "Read only"}
-                    </div>
-                  </div>
-                  <div className="text-sm text-muted-foreground">{functionDefinition.description}</div>
-                  {functionDefinition.access === "mutating" ? (
-                    <div className="text-xs text-muted-foreground">
-                      Approval step: {functionDefinition.approvalDescription}
-                    </div>
-                  ) : null}
-                </div>
-
-                {functionDefinition.access !== "mutating" ? (
-                  <div className="rounded-lg border border-dashed border-border p-3 text-sm text-muted-foreground">
-                    This function is read-only, so policy-based approval rules are not needed.
-                  </div>
-                ) : (
-                  <>
-                    <div className="space-y-3">
-                      {functionPolicies.length === 0 ? (
-                        <div className="rounded-lg border border-dashed border-border p-3 text-sm text-muted-foreground">
-                          No policies yet.
-                        </div>
-                      ) : (
-                        functionPolicies.map((policy) => {
-                          const editForm = policyEditForms[policy.id] ?? toPolicyFormState(policy)
-
-                          return (
-                            <div
-                              key={policy.id}
-                              className="space-y-3 rounded-md border border-border bg-muted/20 p-3"
-                            >
-                              <div className="grid gap-3 md:grid-cols-3">
-                                <div className="space-y-1">
-                                  <div className="text-xs font-medium text-muted-foreground">Action</div>
-                                  <Select
-                                    value={editForm.action}
-                                    onValueChange={(value) =>
-                                      handlePolicyMetaChange(
-                                        "existing",
-                                        policy.id,
-                                        functionDefinition,
-                                        "action",
-                                        (value ?? "auto_allow") as PolicyAction
-                                      )
-                                    }
-                                  >
-                                    <SelectTrigger className="w-full">
-                                      <SelectValue placeholder="Select action" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      {(Object.keys(actionLabels) as PolicyAction[]).map((action) => (
-                                        <SelectItem key={action} value={action}>
-                                          {actionLabels[action]}
-                                        </SelectItem>
-                                      ))}
-                                    </SelectContent>
-                                  </Select>
-                                </div>
-                                <div className="space-y-1">
-                                  <div className="text-xs font-medium text-muted-foreground">Match mode</div>
-                                  <Select
-                                    value={editForm.conditionGroup}
-                                    onValueChange={(value) =>
-                                      handlePolicyMetaChange(
-                                        "existing",
-                                        policy.id,
-                                        functionDefinition,
-                                        "conditionGroup",
-                                        (value ?? "all") as PolicyConditionGroup
-                                      )
-                                    }
-                                  >
-                                    <SelectTrigger className="w-full">
-                                      <SelectValue placeholder="Select match mode" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      {(Object.keys(conditionGroupLabels) as PolicyConditionGroup[]).map(
-                                        (conditionGroup) => (
-                                          <SelectItem key={conditionGroup} value={conditionGroup}>
-                                            {conditionGroupLabels[conditionGroup]}
-                                          </SelectItem>
-                                        )
-                                      )}
-                                    </SelectContent>
-                                  </Select>
-                                </div>
-                                <div className="space-y-1">
-                                  <div className="text-xs font-medium text-muted-foreground">State</div>
-                                  <Select
-                                    value={editForm.enabled ? "enabled" : "disabled"}
-                                    onValueChange={(value) =>
-                                      handlePolicyMetaChange(
-                                        "existing",
-                                        policy.id,
-                                        functionDefinition,
-                                        "enabled",
-                                        value === "enabled"
-                                      )
-                                    }
-                                  >
-                                    <SelectTrigger className="w-full">
-                                      <SelectValue placeholder="Select state" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="enabled">Enabled</SelectItem>
-                                      <SelectItem value="disabled">Disabled</SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                </div>
-                              </div>
-
-                              <div className="space-y-3">
-                                {editForm.conditions.map((condition, index) => {
-                                  const operators = getOperatorOptions(
-                                    functionDefinition,
-                                    condition.field
-                                  )
-
-                                  return (
-                                    <div
-                                      key={condition.id}
-                                      className="grid gap-3 md:grid-cols-[1fr_1fr_1fr_auto]"
-                                    >
-                                      <div className="space-y-1">
-                                        <div className="text-xs font-medium text-muted-foreground">
-                                          Condition {index + 1} field
-                                        </div>
-                                        <Select
-                                          value={condition.field}
-                                          onValueChange={(value) =>
-                                            handleConditionChange(
-                                              "existing",
-                                              policy.id,
-                                              functionDefinition,
-                                              condition.id,
-                                              "field",
-                                              value ?? ""
-                                            )
-                                          }
-                                        >
-                                          <SelectTrigger className="w-full">
-                                            <SelectValue placeholder="Select field" />
-                                          </SelectTrigger>
-                                          <SelectContent>
-                                            {functionDefinition.policyFields.map((field) => (
-                                              <SelectItem key={field.name} value={field.name}>
-                                                {field.label}
-                                              </SelectItem>
-                                            ))}
-                                          </SelectContent>
-                                        </Select>
-                                      </div>
-                                      <div className="space-y-1">
-                                        <div className="text-xs font-medium text-muted-foreground">Operator</div>
-                                        <Select
-                                          value={condition.operator}
-                                          onValueChange={(value) =>
-                                            handleConditionChange(
-                                              "existing",
-                                              policy.id,
-                                              functionDefinition,
-                                              condition.id,
-                                              "operator",
-                                              value ?? "eq"
-                                            )
-                                          }
-                                        >
-                                          <SelectTrigger className="w-full">
-                                            <SelectValue placeholder="Select operator" />
-                                          </SelectTrigger>
-                                          <SelectContent>
-                                            {operators.map((operator) => (
-                                              <SelectItem key={operator} value={operator}>
-                                                {operatorLabels[operator]}
-                                              </SelectItem>
-                                            ))}
-                                          </SelectContent>
-                                        </Select>
-                                      </div>
-                                      <div className="space-y-1">
-                                        <div className="text-xs font-medium text-muted-foreground">Value</div>
-                                        <Input
-                                          value={condition.value}
-                                          onChange={(event) =>
-                                            handleConditionChange(
-                                              "existing",
-                                              policy.id,
-                                              functionDefinition,
-                                              condition.id,
-                                              "value",
-                                              event.target.value
-                                            )
-                                          }
-                                          placeholder="Policy value"
-                                        />
-                                      </div>
-                                      <div className="flex items-end">
-                                        <Button
-                                          variant="outline"
-                                          onClick={() =>
-                                            handleRemoveCondition(
-                                              "existing",
-                                              policy.id,
-                                              functionDefinition,
-                                              condition.id
-                                            )
-                                          }
-                                          disabled={editForm.conditions.length <= 1}
-                                        >
-                                          Remove
-                                        </Button>
-                                      </div>
-                                    </div>
-                                  )
-                                })}
-                              </div>
-
-                              <div className="flex flex-wrap gap-2">
-                                <Button
-                                  variant="outline"
-                                  onClick={() =>
-                                    handleAddCondition("existing", policy.id, functionDefinition)
-                                  }
-                                  disabled={savingPolicyKey !== null}
-                                >
-                                  Add condition
-                                </Button>
-                                <Button
-                                  onClick={() => handleUpdatePolicy(policy, functionDefinition)}
-                                  disabled={savingPolicyKey !== null}
-                                >
-                                  {savingPolicyKey === `edit:${policy.id}` ? "Saving..." : "Save"}
-                                </Button>
-                                <Button
-                                  variant="outline"
-                                  onClick={() => handleDeletePolicy(policy.id)}
-                                  disabled={savingPolicyKey !== null}
-                                >
-                                  {savingPolicyKey === `delete:${policy.id}` ? "Deleting..." : "Delete"}
-                                </Button>
-                              </div>
-                            </div>
-                          )
-                        })
-                      )}
-                    </div>
-
-                    <div className="space-y-3 rounded-md border border-dashed border-border p-3">
-                      <div className="text-sm font-medium">Add Policy</div>
-                      <div className="grid gap-3 md:grid-cols-3">
-                        <div className="space-y-1">
-                          <div className="text-xs font-medium text-muted-foreground">Action</div>
-                          <Select
-                            value={newPolicyForm.action}
-                            onValueChange={(value) =>
-                              handlePolicyMetaChange(
-                                "new",
-                                functionDefinition.name,
-                                functionDefinition,
-                                "action",
-                                (value ?? "auto_allow") as PolicyAction
-                              )
-                            }
-                          >
-                            <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Select action" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {(Object.keys(actionLabels) as PolicyAction[]).map((action) => (
-                                <SelectItem key={action} value={action}>
-                                  {actionLabels[action]}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="space-y-1">
-                          <div className="text-xs font-medium text-muted-foreground">Match mode</div>
-                          <Select
-                            value={newPolicyForm.conditionGroup}
-                            onValueChange={(value) =>
-                              handlePolicyMetaChange(
-                                "new",
-                                functionDefinition.name,
-                                functionDefinition,
-                                "conditionGroup",
-                                (value ?? "all") as PolicyConditionGroup
-                              )
-                            }
-                          >
-                            <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Select match mode" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {(Object.keys(conditionGroupLabels) as PolicyConditionGroup[]).map(
-                                (conditionGroup) => (
-                                  <SelectItem key={conditionGroup} value={conditionGroup}>
-                                    {conditionGroupLabels[conditionGroup]}
-                                  </SelectItem>
-                                )
-                              )}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="space-y-1">
-                          <div className="text-xs font-medium text-muted-foreground">State</div>
-                          <Select
-                            value={newPolicyForm.enabled ? "enabled" : "disabled"}
-                            onValueChange={(value) =>
-                              handlePolicyMetaChange(
-                                "new",
-                                functionDefinition.name,
-                                functionDefinition,
-                                "enabled",
-                                value === "enabled"
-                              )
-                            }
-                          >
-                            <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Select state" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="enabled">Enabled</SelectItem>
-                              <SelectItem value="disabled">Disabled</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
+        {/* --- Agent Runner --- */}
+        <TabsContent value="runner">
+          <Card>
+            <CardHeader>
+              <CardTitle>Agent Runner</CardTitle>
+              <CardDescription>
+                Select an agent, send a prompt, and approve mutating tool calls before they run.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-4 lg:grid-cols-[240px_1fr]">
+                <div className="space-y-2">
+                  <Label>Agent</Label>
+                  <Select value={selectedAgentId || null} onValueChange={handleAgentChange}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select an agent" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {agents.map((agent) => (
+                        <SelectItem key={agent.id} value={agent.id}>
+                          {agent.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {selectedAgent && (
+                    <div className="space-y-1 text-sm text-muted-foreground">
+                      <p>{selectedAgent.description}</p>
+                      <div className="flex flex-wrap gap-1">
+                        <Badge variant="outline">{selectedAgent.model}</Badge>
+                        {selectedAgent.tools.map((tool) => (
+                          <Badge key={tool} variant="secondary">{tool}</Badge>
+                        ))}
                       </div>
+                    </div>
+                  )}
+                </div>
 
-                      <div className="space-y-3">
-                        {newPolicyForm.conditions.map((condition, index) => {
-                          const operators = getOperatorOptions(functionDefinition, condition.field)
+                <div className="space-y-3">
+                  <Textarea
+                    value={message}
+                    onChange={(event) => setMessage(event.target.value)}
+                    placeholder="Ask an agent something useful"
+                    disabled={isRunning}
+                  />
+                  <Button disabled={isRunning || !selectedAgentId} onClick={handleSubmit}>
+                    {isRunning ? (
+                      <><Loader2 className="mr-1.5 h-4 w-4 animate-spin" />Running...</>
+                    ) : (
+                      <>
+                        <Bot className="mr-1.5 h-4 w-4" />
+                        Run agent
+                      </>
+                    )}
+                  </Button>
+                  {reply && (
+                    <GlassCard>
+                      <GlassCardContent className="text-sm whitespace-pre-wrap">
+                        {reply}
+                      </GlassCardContent>
+                    </GlassCard>
+                  )}
+                  {!reply && !isRunning && (
+                    <EmptyState
+                      icon={<Bot className="h-8 w-8" />}
+                      message="The agent response will appear here."
+                      hint="Select an agent and send a prompt to get started."
+                    />
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-                          return (
-                            <div
-                              key={condition.id}
-                              className="grid gap-3 md:grid-cols-[1fr_1fr_1fr_auto]"
-                            >
-                              <div className="space-y-1">
-                                <div className="text-xs font-medium text-muted-foreground">
-                                  Condition {index + 1} field
-                                </div>
-                                <Select
-                                  value={condition.field}
-                                  onValueChange={(value) =>
-                                    handleConditionChange(
-                                      "new",
-                                      functionDefinition.name,
-                                      functionDefinition,
-                                      condition.id,
-                                      "field",
-                                      value ?? ""
-                                    )
-                                  }
-                                >
-                                  <SelectTrigger className="w-full">
-                                    <SelectValue placeholder="Select field" />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {functionDefinition.policyFields.map((field) => (
-                                      <SelectItem key={field.name} value={field.name}>
-                                        {field.label}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                              </div>
-                              <div className="space-y-1">
-                                <div className="text-xs font-medium text-muted-foreground">Operator</div>
-                                <Select
-                                  value={condition.operator}
-                                  onValueChange={(value) =>
-                                    handleConditionChange(
-                                      "new",
-                                      functionDefinition.name,
-                                      functionDefinition,
-                                      condition.id,
-                                      "operator",
-                                      value ?? "eq"
-                                    )
-                                  }
-                                >
-                                  <SelectTrigger className="w-full">
-                                    <SelectValue placeholder="Select operator" />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {operators.map((operator) => (
-                                      <SelectItem key={operator} value={operator}>
-                                        {operatorLabels[operator]}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                              </div>
-                              <div className="space-y-1">
-                                <div className="text-xs font-medium text-muted-foreground">Value</div>
-                                <Input
-                                  value={condition.value}
-                                  onChange={(event) =>
-                                    handleConditionChange(
-                                      "new",
-                                      functionDefinition.name,
-                                      functionDefinition,
-                                      condition.id,
-                                      "value",
-                                      event.target.value
-                                    )
-                                  }
-                                  placeholder="Policy value"
-                                />
-                              </div>
-                              <div className="flex items-end">
-                                <Button
-                                  variant="outline"
-                                  onClick={() =>
-                                    handleRemoveCondition(
-                                      "new",
-                                      functionDefinition.name,
-                                      functionDefinition,
-                                      condition.id
-                                    )
-                                  }
-                                  disabled={newPolicyForm.conditions.length <= 1}
-                                >
-                                  Remove
-                                </Button>
-                              </div>
-                            </div>
-                          )
-                        })}
+        {/* --- Approvals --- */}
+        <TabsContent value="approvals">
+          <Card>
+            <CardHeader>
+              <CardTitle>Pending Approvals</CardTitle>
+              <CardDescription>
+                Mutating functions stay here until a human explicitly approves them.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {pendingApprovals.length === 0 ? (
+                <EmptyState
+                  icon={<CheckCircle className="h-8 w-8" />}
+                  message="No pending approvals"
+                  hint="All clear — mutating tool calls will appear here when they need your sign-off."
+                />
+              ) : (
+                pendingApprovals.map((approval) => (
+                  <GlassCard key={approval.id}>
+                    <GlassCardHeader>
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="space-y-1">
+                          <div className="font-medium">{approval.toolName}</div>
+                          <p className="text-sm text-muted-foreground">{approval.description}</p>
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <span>Agent: {approval.agentId}</span>
+                            <span>·</span>
+                            <time>{new Date(approval.createdAt).toLocaleString()}</time>
+                          </div>
+                        </div>
+                        <StatusBadge status="pending">Pending</StatusBadge>
                       </div>
-
-                      <div className="flex flex-wrap items-center gap-3">
+                    </GlassCardHeader>
+                    <GlassCardContent className="space-y-3">
+                      <pre className="overflow-x-auto rounded-md bg-muted/50 p-3 text-xs whitespace-pre-wrap">
+                        {formatParameters(approval.parameters)}
+                      </pre>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          onClick={() => handleResolveApproval(approval.id, "allow")}
+                          disabled={resolvingApprovalId !== null}
+                        >
+                          {resolvingApprovalId === approval.id ? (
+                            <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <CheckCircle className="mr-1.5 h-3.5 w-3.5" />
+                          )}
+                          Accept
+                        </Button>
                         <Button
                           variant="outline"
-                          onClick={() => handleAddCondition("new", functionDefinition.name, functionDefinition)}
-                          disabled={savingPolicyKey !== null}
+                          size="sm"
+                          onClick={() => handleResolveApproval(approval.id, "deny")}
+                          disabled={resolvingApprovalId !== null}
                         >
-                          Add condition
+                          {resolvingApprovalId === approval.id ? (
+                            <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <XCircle className="mr-1.5 h-3.5 w-3.5" />
+                          )}
+                          Deny
                         </Button>
-                        <Button
-                          onClick={() => handleCreatePolicy(functionDefinition)}
-                          disabled={savingPolicyKey !== null || newPolicyForm.conditions.length === 0}
-                        >
-                          {savingPolicyKey === `new:${functionDefinition.name}` ? "Creating..." : "Add policy"}
-                        </Button>
-                        <div className="text-xs text-muted-foreground">
-                          Matching requests can now be auto-allowed or auto-denied.
+                      </div>
+                    </GlassCardContent>
+                  </GlassCard>
+                ))
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* --- Policies --- */}
+        <TabsContent value="policies">
+          <Card>
+            <CardHeader>
+              <CardTitle>Function Policies</CardTitle>
+              <CardDescription>
+                Create multi-condition auto-allow or auto-deny rules for mutating backend functions.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {mutatingFunctions.map((functionDefinition) => {
+                const functionPolicies = policies.filter(
+                  (policy) => policy.toolName === functionDefinition.name
+                )
+                const newPolicyForm =
+                  newPolicyForms[functionDefinition.name] ?? createDefaultPolicyForm(functionDefinition)
+
+                return (
+                  <div key={functionDefinition.name} className="space-y-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium">{functionDefinition.name}</span>
+                          <Badge variant="destructive">Mutating</Badge>
                         </div>
+                        <p className="text-sm text-muted-foreground">{functionDefinition.description}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          Approval step: {functionDefinition.approvalDescription}
+                        </p>
                       </div>
                     </div>
-                  </>
-                )}
-              </div>
-            )
-          })}
-        </CardContent>
-      </Card>
+
+                    {functionPolicies.length === 0 ? (
+                      <EmptyState
+                        icon={<ShieldCheck className="h-6 w-6" />}
+                        message="No policies yet"
+                        hint="Add a policy below to auto-allow or auto-deny matching requests."
+                        className="py-6"
+                      />
+                    ) : (
+                      functionPolicies.map((policy) => {
+                        const editForm = policyEditForms[policy.id] ?? toPolicyFormState(policy)
+                        return (
+                          <PolicyForm
+                            key={policy.id}
+                            form={editForm}
+                            scope="existing"
+                            formKey={policy.id}
+                            functionDefinition={functionDefinition}
+                            savingPolicyKey={savingPolicyKey}
+                            savingKeyPrefix="edit"
+                            submitLabel="Save"
+                            submitLoadingLabel="Saving..."
+                            onMetaChange={handlePolicyMetaChange}
+                            onConditionChange={handleConditionChange}
+                            onAddCondition={handleAddCondition}
+                            onRemoveCondition={handleRemoveCondition}
+                            onSubmit={() => handleUpdatePolicy(policy, functionDefinition)}
+                            onDelete={() => handleDeletePolicy(policy.id)}
+                          />
+                        )
+                      })
+                    )}
+
+                    <div className="space-y-2">
+                      <div className="text-sm font-medium flex items-center gap-1.5">
+                        <Plus className="h-3.5 w-3.5" /> Add Policy
+                      </div>
+                      <PolicyForm
+                        form={newPolicyForm}
+                        scope="new"
+                        formKey={functionDefinition.name}
+                        functionDefinition={functionDefinition}
+                        savingPolicyKey={savingPolicyKey}
+                        savingKeyPrefix="new"
+                        submitLabel="Add policy"
+                        submitLoadingLabel="Creating..."
+                        onMetaChange={handlePolicyMetaChange}
+                        onConditionChange={handleConditionChange}
+                        onAddCondition={handleAddCondition}
+                        onRemoveCondition={handleRemoveCondition}
+                        onSubmit={() => handleCreatePolicy(functionDefinition)}
+                      />
+                    </div>
+
+                    <Separator />
+                  </div>
+                )
+              })}
+
+              {readOnlyFunctions.length > 0 && (
+                <div className="space-y-3">
+                  <div className="text-sm font-medium text-muted-foreground">Read-only functions</div>
+                  {readOnlyFunctions.map((functionDefinition) => (
+                    <div key={functionDefinition.name} className="flex items-center justify-between gap-3 rounded-lg border border-dashed border-border p-3">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium">{functionDefinition.name}</span>
+                          <Badge variant="secondary">Read only</Badge>
+                        </div>
+                        <p className="text-xs text-muted-foreground">{functionDefinition.description}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }
