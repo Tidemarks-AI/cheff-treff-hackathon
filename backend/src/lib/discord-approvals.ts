@@ -162,7 +162,7 @@ export async function handleDiscordInteraction(req: Request, res: Response) {
   const timestamp = req.headers["x-signature-timestamp"] as string;
   const rawBody = (req as Request & { body: Buffer }).body;
 
-  const isValid = verifyKey(rawBody, signature, timestamp, publicKey);
+  const isValid = await verifyKey(rawBody, signature, timestamp, publicKey);
 
   if (!isValid) {
     res.status(401).json({ error: "Invalid request signature" });
