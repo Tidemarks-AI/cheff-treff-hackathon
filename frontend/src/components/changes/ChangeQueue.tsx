@@ -28,7 +28,7 @@ export function ChangeQueue({ changes, selectedId, onSelect }: ChangeQueueProps)
   if (changes.length === 0) {
     return (
       <div className="flex h-full flex-col items-center justify-center px-4 text-center">
-        <div className="text-xs text-gray-400">No requests yet</div>
+        <div className="text-xs text-muted-foreground">No requests yet</div>
       </div>
     )
   }
@@ -44,12 +44,12 @@ export function ChangeQueue({ changes, selectedId, onSelect }: ChangeQueueProps)
               onClick={() => onSelect(cr.id)}
               className={`flex flex-col gap-1 rounded-xl px-2.5 py-2 text-left transition-all ${
                 isSelected
-                  ? "bg-white/80 shadow-sm ring-1 ring-gray-200/60"
-                  : "hover:bg-white/40"
+                  ? "bg-background/80 shadow-sm ring-1 ring-border/60"
+                  : "hover:bg-background/40"
               }`}
             >
               <div className="flex items-center justify-between gap-1.5">
-                <span className="text-[12px] font-medium text-gray-800 truncate">
+                <span className="text-[12px] font-medium text-foreground truncate">
                   {formatProposalTitle(cr)}
                 </span>
                 <Badge
@@ -63,7 +63,7 @@ export function ChangeQueue({ changes, selectedId, onSelect }: ChangeQueueProps)
                   {cr.status === "pending" ? "New" : cr.status === "approved" ? "✓" : "✕"}
                 </Badge>
               </div>
-              <div className="flex items-center gap-2 text-[10px] text-gray-400">
+              <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
                 <Mail className="h-2.5 w-2.5" />
                 <span className="truncate">{cr.source_from}</span>
                 <span className="ml-auto shrink-0 flex items-center gap-0.5">

@@ -10,13 +10,22 @@ import {
 } from "@/lib/changes-api"
 import { createLocalFixture } from "@/lib/change-fixtures"
 import { ChangeDetail } from "@/components/changes/ChangeDetail"
+import { ChangeQueue } from "@/components/changes/ChangeQueue"
 import { OntologyPane } from "@/components/changes/OntologyPane"
 
 export default function Changes() {
   const [changes, setChanges] = useState<ChangeRequest[]>([])
+  const [selectedId, setSelectedId] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
-  const activeChange = changes[0] ?? null
+  const activeChange = changes.find((c) => c.id === selectedId) ?? null
+
+  // Auto-select first change when list changes and nothing is selected
+  useEffect(() => {
+    if (!selectedId && changes.length > 0) {
+      setSelectedId(changes[0].id)
+    }
+  }, [changes, selectedId])
 
   useEffect(() => {
     listChangeRequests()
@@ -24,7 +33,10 @@ export default function Changes() {
       .catch((err) => console.warn("Failed to load changes:", err))
 
     const cleanup = connectSSE({
-      onNew: (cr) => setChanges((prev) => [cr, ...prev]),
+      onNew: (cr) => {
+        setChanges((prev) => [cr, ...prev])
+        setSelectedId(cr.id)
+      },
       onUpdated: (cr) =>
         setChanges((prev) => prev.map((c) => (c.id === cr.id ? cr : c))),
     })
@@ -100,22 +112,27 @@ export default function Changes() {
 
   return (
     <div className="relative h-[calc(100vh-4rem)] overflow-hidden">
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-slate-50 via-white to-slate-100/80" />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-muted via-background to-muted/80" />
 
       <div className="relative flex h-full">
+        {/* Queue sidebar */}
+        <div className="relative z-10 w-[220px] shrink-0 border-r border-border/50 overflow-hidden bg-background/50 backdrop-blur-2xl">
+          <div className="px-3 pt-4 pb-2">
+            <h3 className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Inbox</h3>
+          </div>
+          <ChangeQueue changes={changes} selectedId={selectedId} onSelect={setSelectedId} />
+        </div>
+
         {/* Graph — takes remaining space */}
-        <div className={`relative flex-1 ${activeChange ? "" : ""}`}>
+        <div className="relative flex-1">
           <OntologyPane change={activeChange} />
 
-          {!activeChange && (
+          {!activeChange && changes.length === 0 && (
             <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center">
-              <div
-                className="rounded-2xl border border-white/50 px-6 py-4 text-center shadow-lg"
-                style={{ background: "rgba(255,255,255,0.6)", backdropFilter: "blur(20px)" }}
-              >
-                <p className="text-sm text-gray-500">Waiting for change requests...</p>
-                <p className="mt-1 text-xs text-gray-400">
-                  Press <kbd className="rounded border border-gray-200/60 bg-white/60 px-1 py-0.5 font-mono text-[10px]">⌘⇧D</kbd> to seed demo
+              <div className="rounded-2xl border border-border/50 bg-background/60 px-6 py-4 text-center shadow-lg backdrop-blur-xl">
+                <p className="text-sm text-muted-foreground">Waiting for change requests...</p>
+                <p className="mt-1 text-xs text-muted-foreground/70">
+                  Press <kbd className="rounded border border-border/60 bg-background/60 px-1 py-0.5 font-mono text-[10px]">⌘⇧D</kbd> to seed demo
                 </p>
               </div>
             </div>
@@ -124,15 +141,8 @@ export default function Changes() {
 
         {/* Side panel — impact detail */}
         {activeChange && (
-          <div className="relative z-10 w-[380px] shrink-0 border-l border-gray-200/50 overflow-hidden">
-            <div
-              className="h-full overflow-hidden"
-              style={{
-                background: "rgba(255,255,255,0.7)",
-                backdropFilter: "blur(24px)",
-                WebkitBackdropFilter: "blur(24px)",
-              }}
-            >
+          <div className="relative z-10 w-[380px] shrink-0 border-l border-border/50 overflow-hidden">
+            <div className="h-full overflow-hidden bg-background/70 backdrop-blur-3xl">
               <ChangeDetail
                 change={activeChange}
                 onApprove={handleApprove}

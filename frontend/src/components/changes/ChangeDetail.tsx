@@ -22,13 +22,13 @@ export function ChangeDetail({ change, onApprove, onReject, isLoading }: ChangeD
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="px-6 pt-5 pb-3 border-b border-gray-100">
+      <div className="px-6 pt-5 pb-3 border-b border-border">
         <div className="flex items-start justify-between">
           <div className="min-w-0">
-            <h2 className="text-base font-semibold text-gray-900 leading-tight">
+            <h2 className="text-base font-semibold text-foreground leading-tight">
               {values.vendor as string}
             </h2>
-            <div className="flex items-center gap-1.5 mt-1.5 text-xs text-gray-400">
+            <div className="flex items-center gap-1.5 mt-1.5 text-xs text-muted-foreground">
               <FileText className="h-3 w-3 shrink-0" />
               <span className="truncate">{change.source_attachment}</span>
             </div>
@@ -40,23 +40,23 @@ export function ChangeDetail({ change, onApprove, onReject, isLoading }: ChangeD
       </div>
 
       {/* Impact metrics */}
-      <div className="px-6 py-3 border-b border-gray-100">
+      <div className="px-6 py-3 border-b border-border">
         <div className="grid grid-cols-3 gap-4">
           <div>
-            <div className="text-[10px] uppercase tracking-wider text-gray-400 mb-0.5">Monthly</div>
-            <div className="text-base font-semibold tabular-nums text-gray-900">
+            <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">Monthly</div>
+            <div className="text-base font-semibold tabular-nums text-foreground">
               {fmtCurrency(Math.abs(change.impact_monthly_burn_delta))}
             </div>
           </div>
           <div>
-            <div className="text-[10px] uppercase tracking-wider text-gray-400 mb-0.5">Annual</div>
-            <div className="text-base font-semibold tabular-nums text-gray-900">
+            <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">Annual</div>
+            <div className="text-base font-semibold tabular-nums text-foreground">
               {fmtCurrency(Math.abs(change.impact_annual_cost_delta))}
             </div>
           </div>
           <div>
-            <div className="text-[10px] uppercase tracking-wider text-gray-400 mb-0.5">Runway</div>
-            <div className="text-base font-semibold tabular-nums text-gray-900">
+            <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">Runway</div>
+            <div className="text-base font-semibold tabular-nums text-foreground">
               {change.impact_runway_months_delta > 0 ? "+" : ""}{change.impact_runway_months_delta}mo
             </div>
           </div>
@@ -64,8 +64,8 @@ export function ChangeDetail({ change, onApprove, onReject, isLoading }: ChangeD
       </div>
 
       {/* Forecast chart */}
-      <div className="px-6 py-3 border-b border-gray-100">
-        <div className="text-[10px] uppercase tracking-wider text-gray-400 mb-2">Burn Forecast</div>
+      <div className="px-6 py-3 border-b border-border">
+        <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">Burn Forecast</div>
         <div className="h-[140px]">
           <ImpactChart
             forecastAfter={change.impact_forecast_after}
@@ -75,23 +75,23 @@ export function ChangeDetail({ change, onApprove, onReject, isLoading }: ChangeD
       </div>
 
       {/* Evidence */}
-      <div className="px-6 py-3 border-b border-gray-100 flex-1 min-h-0 overflow-y-auto">
-        <div className="text-[10px] uppercase tracking-wider text-gray-400 mb-2">Evidence</div>
+      <div className="px-6 py-3 border-b border-border flex-1 min-h-0 overflow-y-auto">
+        <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">Evidence</div>
         <div className="space-y-2">
           {change.reasoning_evidence.map((ev) => (
             <div key={ev.field} className="text-xs">
               <div className="flex items-baseline gap-2">
-                <span className="font-medium text-gray-700 capitalize">{ev.field.replace(/_/g, " ")}</span>
-                <span className="font-mono text-[10px] text-gray-400">{ev.clause}</span>
+                <span className="font-medium text-foreground/80 capitalize">{ev.field.replace(/_/g, " ")}</span>
+                <span className="font-mono text-[10px] text-muted-foreground">{ev.clause}</span>
               </div>
-              <p className="text-gray-500 mt-0.5 leading-relaxed">{ev.text}</p>
+              <p className="text-muted-foreground mt-0.5 leading-relaxed">{ev.text}</p>
             </div>
           ))}
         </div>
       </div>
 
       {/* Policy + actions */}
-      <div className="px-6 py-3 border-t border-gray-100 shrink-0">
+      <div className="px-6 py-3 border-t border-border shrink-0">
         {!change.policy_satisfied && (
           <div className="flex items-start gap-2 mb-3 rounded-lg bg-amber-50/80 px-3 py-2">
             <AlertTriangle className="h-3.5 w-3.5 text-amber-500 mt-0.5 shrink-0" />
@@ -117,7 +117,7 @@ export function ChangeDetail({ change, onApprove, onReject, isLoading }: ChangeD
               variant="outline"
               onClick={onReject}
               disabled={isLoading}
-              className="rounded-lg h-9 px-4 text-xs border-gray-200"
+              className="rounded-lg h-9 px-4 text-xs border-border"
             >
               <XCircle className="h-3.5 w-3.5 mr-1.5" />
               Reject

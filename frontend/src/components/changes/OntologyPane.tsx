@@ -41,28 +41,40 @@ async function getLayoutedElements(nodes: Node[], edges: Edge[]) {
   }
 }
 
-const AMBER = "#d97706"
-const BLUE = "#3b82f6"
-const GRAY = "#d4d4d8"
+// Two semantic groups: structure (steel) and financial (ice blue)
+const STEEL   = { border: "#b0b8c4", color: "#5a6370" } // structure: cost centers, budgets, expenses
+const ICE     = { border: "#a3b8d0", color: "#546d8a" } // financial: forecasts, runway, bank
+
+const NODE_COLORS: Record<string, { border: string; color: string }> = {
+  cost_center:   STEEL,
+  budget_line:   STEEL,
+  fixed_expense: STEEL,
+  costs:         STEEL,
+  variance:      ICE,
+  forecast:      ICE,
+  runway:        ICE,
+  bank:          ICE,
+}
+const DEFAULT_NODE = STEEL
 
 // IDs that a change request references (edges point to these)
 const REFERENCED_IDS = new Set(["cost_center", "fixed_expense"])
 
 function nodeStyle(id: string, isReferenced: boolean, hasChange: boolean) {
   const referenced = hasChange && isReferenced
+  const palette = NODE_COLORS[id] ?? DEFAULT_NODE
   return {
     borderRadius: 12,
-    border: `1.5px solid ${referenced ? BLUE : AMBER}`,
-    backgroundColor: referenced ? "rgba(219,234,254,0.9)" : "rgba(255,251,235,0.85)",
-    backdropFilter: "blur(8px)",
+    border: `1.5px solid ${referenced ? palette.color : palette.border}`,
+    background: "transparent",
     padding: "8px 14px",
     fontSize: 12,
     fontWeight: referenced ? 600 : 500,
     width: NODE_WIDTH,
     textAlign: "center" as const,
-    color: referenced ? "#1e40af" : "#78350f",
+    color: palette.color,
     transition: "all 400ms ease",
-    boxShadow: referenced ? "0 0 0 3px rgba(59,130,246,0.15), 0 2px 12px rgba(59,130,246,0.1)" : "none",
+    boxShadow: "none",
   }
 }
 
@@ -100,9 +112,11 @@ function makeEdges(hasChange: boolean): Edge[] {
     return {
       ...e,
       type: "default",
-      style: { stroke: touchesRef ? "rgba(59,130,246,0.3)" : GRAY, strokeWidth: 1.5, transition: "all 400ms ease" },
-      labelStyle: { fill: touchesRef ? "rgba(59,130,246,0.5)" : "#a1a1aa", fontSize: 10, transition: "all 400ms ease" },
-      markerEnd: { type: MarkerType.ArrowClosed, width: 14, height: 14, color: touchesRef ? "rgba(59,130,246,0.3)" : GRAY },
+      style: { stroke: touchesRef ? "#8b95a5" : "#dde0e4", strokeWidth: 1.5, transition: "all 400ms ease" },
+      labelStyle: { fill: touchesRef ? "#8b95a5" : "#b0b5be", fontSize: 10, transition: "all 400ms ease" },
+      labelBgStyle: { fill: "transparent" },
+      labelBgPadding: [0, 0] as [number, number],
+      markerEnd: { type: MarkerType.ArrowClosed, width: 14, height: 14, color: touchesRef ? "#8b95a5" : "#dde0e4" },
     }
   })
 }
@@ -131,35 +145,34 @@ function OntologyFlow({ change }: Props) {
         targetPosition: Position.Top,
         style: {
           borderRadius: 14,
-          border: `2px ${isApproved ? "solid" : "dashed"} ${BLUE}`,
-          backgroundColor: isApproved ? "rgba(219,234,254,0.95)" : "rgba(219,234,254,0.5)",
-          backdropFilter: "blur(12px)",
+          border: `2px ${isApproved ? "solid" : "dashed"} ${isApproved ? "#4a7a97" : "#93b5cf"}`,
+          background: "transparent",
           padding: "10px 16px",
           fontSize: 13,
           fontWeight: 700,
           width: NODE_WIDTH + 10,
           textAlign: "center" as const,
-          color: BLUE,
+          color: "#374151",
           transition: "all 600ms ease",
-          boxShadow: isApproved
-            ? "0 4px 24px rgba(59,130,246,0.3)"
-            : "0 2px 16px rgba(59,130,246,0.12)",
+          boxShadow: "none",
         },
       })
 
       const edgeStyle = {
         strokeDasharray: isApproved ? "0" : "6 4",
-        stroke: BLUE,
+        stroke: "#6b7280",
         strokeWidth: 2,
         opacity: isApproved ? 1 : 0.6,
         transition: "all 600ms ease",
       }
-      const labelStyle = { fill: BLUE, fontSize: 10, fontWeight: 600 }
-      const marker = { type: MarkerType.ArrowClosed as const, width: 14, height: 14, color: BLUE }
+      const labelStyle = { fill: "#6b7280", fontSize: 10, fontWeight: 600 }
+      const labelBgStyle = { fill: "transparent" }
+      const labelBgPadding: [number, number] = [0, 0]
+      const marker = { type: MarkerType.ArrowClosed as const, width: 14, height: 14, color: "#6b7280" }
 
       allEdges.push(
-        { id: "e-proposed-fe", source: "proposed", target: "fixed_expense", label: "instance of", type: "default", style: edgeStyle, labelStyle, markerEnd: marker },
-        { id: "e-proposed-cc", source: "proposed", target: "cost_center", label: "belongs to", type: "default", style: edgeStyle, labelStyle, markerEnd: marker },
+        { id: "e-proposed-fe", source: "proposed", target: "fixed_expense", label: "instance of", type: "default", style: edgeStyle, labelStyle, labelBgStyle, labelBgPadding, markerEnd: marker },
+        { id: "e-proposed-cc", source: "proposed", target: "cost_center", label: "belongs to", type: "default", style: edgeStyle, labelStyle, labelBgStyle, labelBgPadding, markerEnd: marker },
       )
     }
 

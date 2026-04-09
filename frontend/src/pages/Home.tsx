@@ -85,26 +85,26 @@ export default function Home() {
       <section className="relative flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center overflow-hidden px-6">
         {/* Animated background */}
         <div className="pointer-events-none absolute inset-0">
-          <div className="absolute inset-0 bg-gradient-to-b from-slate-50 via-white to-white" />
+          <div className="absolute inset-0 bg-gradient-to-b from-muted via-background to-background" />
           <LightBeams className="absolute inset-0" />
-          <div className="absolute inset-0 bg-gradient-to-b from-white/20 via-transparent to-white/80" />
+          <div className="absolute inset-0 bg-gradient-to-b from-background/20 via-transparent to-background/80" />
         </div>
 
         <div className="relative z-10 mx-auto flex max-w-4xl flex-col items-center text-center">
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/60 bg-white/50 px-4 py-1.5 text-sm text-gray-600 shadow-sm backdrop-blur-md">
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-border bg-background/50 px-4 py-1.5 text-sm text-muted-foreground shadow-sm backdrop-blur-md">
             <Zap className="h-3.5 w-3.5 text-amber-500" />
             AI-powered startup operations
           </div>
 
-          <h1 className="text-5xl font-bold tracking-tight text-gray-950 sm:text-6xl md:text-7xl">
+          <h1 className="text-5xl font-bold tracking-tight text-foreground sm:text-6xl md:text-7xl">
             Your operating system
             <br />
-            <span className="bg-gradient-to-r from-gray-950 via-gray-700 to-gray-400 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-foreground via-muted-foreground to-muted-foreground/50 bg-clip-text text-transparent">
               for startups.
             </span>
           </h1>
 
-          <p className="mt-6 max-w-2xl text-lg text-gray-500 sm:text-xl">
+          <p className="mt-6 max-w-2xl text-lg text-muted-foreground sm:text-xl">
             A collection of AI agents that handle your startup operations.
             <br className="hidden sm:block" />
             Fast, autonomous, and reliable.
@@ -118,16 +118,16 @@ export default function Home() {
             <Button
               variant="outline"
               size="lg"
-              className="gap-2 rounded-full border-gray-300 bg-white/60 px-8 text-base text-gray-950 backdrop-blur-sm"
+              className="gap-2 rounded-full border-border bg-background/60 px-8 text-base text-foreground backdrop-blur-sm"
             >
               <Mic className="h-4 w-4" />
               Talk to an Agent
             </Button>
           </div>
 
-          <p className="mt-4 text-xs text-gray-400">
+          <p className="mt-4 text-xs text-muted-foreground/70">
             Press{" "}
-            <kbd className="rounded border border-gray-200 bg-gray-100 px-1.5 py-0.5 font-mono text-[10px]">
+            <kbd className="rounded border border-border bg-muted px-1.5 py-0.5 font-mono text-[10px]">
               Space
             </kbd>{" "}
             anywhere to speak
@@ -141,15 +141,15 @@ export default function Home() {
           {features.map((f) => (
             <div
               key={f.title}
-              className="group rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
+              className="group rounded-2xl border border-border bg-card p-6 shadow-sm transition-shadow hover:shadow-md"
             >
-              <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-gray-100 text-gray-600 transition-colors group-hover:bg-gray-950 group-hover:text-white">
+              <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-muted text-muted-foreground transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
                 {f.icon}
               </div>
-              <h3 className="mb-2 text-lg font-semibold text-gray-950">
+              <h3 className="mb-2 text-lg font-semibold text-foreground">
                 {f.title}
               </h3>
-              <p className="text-sm leading-relaxed text-gray-500">
+              <p className="text-sm leading-relaxed text-muted-foreground">
                 {f.description}
               </p>
             </div>
