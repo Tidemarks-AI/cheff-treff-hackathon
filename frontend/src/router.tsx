@@ -10,6 +10,7 @@ import App from "./App"
 import Agents from "./pages/Agents"
 import Finance from "./pages/Finance"
 import Login from "./pages/Login"
+import Home from "./pages/Home"
 
 const rootRoute = createRootRoute({
   component: Outlet,
@@ -46,7 +47,7 @@ const authenticatedLayout = createRoute({
 const indexRoute = createRoute({
   getParentRoute: () => authenticatedLayout,
   path: "/",
-  component: () => <div>Welcome to StartupOS</div>,
+  component: Home,
 })
 
 const financeRoute = createRoute({
