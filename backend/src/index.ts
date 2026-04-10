@@ -355,7 +355,7 @@ async function resolveCompanyDB(req: express.Request): Promise<string> {
     throw new Error("Invalid auth token");
   }
 
-  // Check for explicit db query param first, then look up user's default company qwer
+  // Check for explicit db query param first, then look up user's default company
   const dbParam = req.query.db as string | undefined;
   if (dbParam) return dbParam;
 
