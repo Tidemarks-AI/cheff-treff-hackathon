@@ -111,10 +111,20 @@ async function processMessage(gmail: any, messageId: string): Promise<void> {
     return;
   }
 
-  // Store in SurrealDB
+  // Store in SurrealDB (dedup by Gmail message ID)
   const surrealDbName = process.env.DEFAULT_SURREAL_DB || "acme_startup_gmbh";
   const db = await getCompanyDB(surrealDbName);
   try {
+    // Check if this Gmail message was already processed (guards against serverless cold starts)
+    const [existing] = await db.query<[Array<{ id: string }>]>(
+      "SELECT id FROM change_request WHERE source_gmail_id = $gid LIMIT 1",
+      { gid: messageId }
+    );
+    if (existing && existing.length > 0) {
+      console.log(`Change request for Gmail message ${messageId} already exists, skipping`);
+      return;
+    }
+
     const cr = await createChangeRequest(db, draft);
     broadcastSSE("change:new", cr);
 

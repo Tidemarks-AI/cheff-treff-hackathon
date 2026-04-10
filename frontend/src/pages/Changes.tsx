@@ -43,7 +43,9 @@ export default function Changes() {
 
     const cleanup = connectSSE({
       onNew: (cr) => {
-        setChanges((prev) => [cr, ...prev])
+        setChanges((prev) =>
+          prev.some((c) => c.id === cr.id) ? prev : [cr, ...prev]
+        )
         setSelectedId(cr.id)
       },
       onUpdated: (cr) =>
